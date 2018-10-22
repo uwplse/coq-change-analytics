@@ -5,5 +5,5 @@ open Stdarg
 (* Test command *)
 VERNAC COMMAND EXTEND Test CLASSIFIED AS SIDEFF
 | [ "Test" ] ->
-  [ Printf.printf "%s\n\n" "yo" ]
+  [ Feedback.msg_notice (Pp.str "yo\n") ]
 END
