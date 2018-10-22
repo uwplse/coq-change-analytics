@@ -5,7 +5,7 @@ open Stdarg
 (*
  * Various hooks to register once we can
  *)
-let print_state_add (state : Stateid.t) : unit =
+let print_state_add (v : Vernacexpr.vernac_control CAst.t) (state : Stateid.t) : unit =
   Feedback.msg_notice
     (Pp.str (Printf.sprintf "ADD: %s\n" (Stateid.to_string state)))
 
