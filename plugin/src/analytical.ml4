@@ -5,7 +5,7 @@ open Stdarg
 (*
  * How we can print state IDs, once we have them
  *)
-let unused_command (state : Stateid.t) : unit =
+let print_state (state : Stateid.t) : unit =
   Feedback.msg_notice (Pp.str (Stateid.to_string state))
 
 let run_test_command () : unit =
