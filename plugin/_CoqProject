@@ -1,0 +1,8 @@
+-I src
+-R theories Analytical
+
+src/analytical.ml4
+src/analytics.mlpack
+
+theories/Analytics.v
+
