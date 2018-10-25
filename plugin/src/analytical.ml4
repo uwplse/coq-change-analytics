@@ -1,9 +1,7 @@
 DECLARE PLUGIN "analytical"
 
-open Stdarg
-
 (*
- * Various hooks to register once we can
+ * Hooks into the document state
  *)
 let print_state_add (v : Vernacexpr.vernac_control CAst.t) (state : Stateid.t) : unit =
   Feedback.msg_notice
@@ -17,6 +15,9 @@ let print_state_exec (state : Stateid.t) : unit =
   Feedback.msg_notice
     (Pp.str (Printf.sprintf "EXEC: %s\n" (Stateid.to_string state)))
 
+(*
+ * Setting the hooks
+ *)
 let hooks : Stm.document_edit_notifiers =
   { add_hook = print_state_add ;
     edit_hook = print_state_edit ;
@@ -24,15 +25,3 @@ let hooks : Stm.document_edit_notifiers =
   }
 
 let _ = Hook.set Stm.document_edit_hook hooks
-
-
-(* --- Command infrastructure --- *)
-
-let run_test_command () : unit =
-  Feedback.msg_notice (Pp.str "yo\n")
-
-(* Test command *)
-VERNAC COMMAND EXTEND Test CLASSIFIED AS SIDEFF
-| [ "Test" ] ->
-  [ run_test_command () ]
-END
