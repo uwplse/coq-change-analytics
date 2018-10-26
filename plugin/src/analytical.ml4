@@ -6,7 +6,8 @@ DECLARE PLUGIN "analytical"
 let print_state_add (v : Vernacexpr.vernac_control CAst.t) (state : Stateid.t) : unit =
   Feedback.msg_notice
     (Pp.str (Printf.sprintf "ADD@%fs: %s\n" (Unix.gettimeofday ())
-               (Stateid.to_string state)))
+               (Stateid.to_string state))) ;
+  Feedback.msg_notice (Ppvernac.pr_vernac v.v)
 
 let print_state_edit (state : Stateid.t) : unit =
   Feedback.msg_notice
