@@ -1,6 +1,9 @@
 DECLARE PLUGIN "analytical"
 
 open Goptions
+open Lwt
+open Cohttp
+open Cohttp_lwt_unix
 
 (* --- Options --- *)
 
@@ -15,9 +18,21 @@ let _ = declare_bool_option {
   optkey = ["Debug"; "Analytics"];
   optread = (fun () -> !opt_debug_analytics);
   optwrite = (fun b -> opt_debug_analytics := b);
-}
+          }
 
-(* 
+let log () : unit =
+  let response =
+    Client.post_form [("timestamp", ["1"]); ("command", ["auto."])] (Uri.of_string "http://alexsanchezstern.com:61234/coq-analytics/") >>= fun (resp, body) ->
+    Printf.printf "Got here" ;
+    let code = resp |> Response.status |> Code.code_of_status in
+    Printf.printf "Response code: %d\n" code;
+    Printf.printf "Headers: %s\n" (resp |> Response.headers |> Header.to_string);
+    body |> Cohttp_lwt.Body.to_string >|= fun body ->
+    Printf.printf "Body of length: %d\n" (String.length body);
+    body in
+  ignore (Lwt_main.run response)
+
+(*
  * Lookup the debug analytics options.
  * Properly use the table and not the ref because it's probably safer.
  *)
@@ -37,6 +52,7 @@ let print_analytics (output : Pp.t) : unit =
   if is_debug () then
     Feedback.msg_notice output
   else
+    log () ;
     (* TODO remove warning and send to server *)
     Feedback.msg_notice
       (Pp.seq
@@ -70,7 +86,7 @@ let print_state (action : string) (state : Stateid.t) : Pp.t =
      Pp.str "At ID: ";
      Pp.str (Stateid.to_string state);
      Pp.str "\n"]
-                     
+
 (*
  * Hooks into the document state
  *)
