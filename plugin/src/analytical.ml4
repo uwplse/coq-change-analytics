@@ -20,9 +20,9 @@ let _ = declare_bool_option {
   optwrite = (fun b -> opt_debug_analytics := b);
           }
 
-let log () : unit =
+let log (msg : string) : unit =
   let response =
-    Client.post_form [("timestamp", ["1"]); ("command", ["auto."])] (Uri.of_string "http://alexsanchezstern.com:61234/coq-analytics/") >>= fun (resp, body) ->
+    Client.post_form [("msg", [msg])] (Uri.of_string "http://alexsanchezstern.com:61234/coq-analytics/") >>= fun (resp, body) ->
     Printf.printf "Got here" ;
     let code = resp |> Response.status |> Code.code_of_status in
     Printf.printf "Response code: %d\n" code;
@@ -50,14 +50,9 @@ let is_debug () : bool =
  *)
 let print_analytics (output : Pp.t) : unit =
   if is_debug () then
-    Feedback.msg_notice output
+    (Feedback.msg_notice output)
   else
-    log () ;
-    (* TODO remove warning and send to server *)
-    Feedback.msg_notice
-      (Pp.seq
-         [(Pp.str "Output to a server is not yet implemented. Please set the Debug Analytics option.");
-          output])
+    log (Pp.string_of_ppcmds output)
 
 (*
  * From a state ID, get the vernac AST.

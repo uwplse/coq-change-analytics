@@ -8,6 +8,6 @@ app = Flask(__name__)
 @app.route("/coq-analytics/", methods=["POST"])
 def log_command():
     with open(logpath, 'a') as logfile:
-        logfile.write("{}: {}\n".format(request.form["timestamp"],
-                              	        request.form["command"]))
+        print(request.form["msg"])
+        logfile.write("{}\n".format(request.form["msg"]))
     return 'Submitted'
