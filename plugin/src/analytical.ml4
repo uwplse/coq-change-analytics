@@ -23,13 +23,8 @@ let _ = declare_bool_option {
 let log (msg : string) : unit =
   let response =
     Client.post_form [("msg", [msg])] (Uri.of_string "http://alexsanchezstern.com:61234/coq-analytics/") >>= fun (resp, body) ->
-    Printf.printf "Got here" ;
     let code = resp |> Response.status |> Code.code_of_status in
-    Printf.printf "Response code: %d\n" code;
-    Printf.printf "Headers: %s\n" (resp |> Response.headers |> Header.to_string);
-    body |> Cohttp_lwt.Body.to_string >|= fun body ->
-    Printf.printf "Body of length: %d\n" (String.length body);
-    body in
+    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   ignore (Lwt_main.run response)
 
 (*
