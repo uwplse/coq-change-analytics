@@ -82,24 +82,19 @@ let print_state (action : string) (state : Stateid.t) : Pp.t =
  *)
 let print_state_add (v : Vernacexpr.vernac_control CAst.t) (state : Stateid.t) : unit =
   print_analytics
-    (Pp.seq
-       [Pp.str (Printf.sprintf "ADD@%fs\n" (Unix.gettimeofday ()));
-        print_state "From old state" state;
-        Pp.str "Adding: ";
-        Ppvernac.pr_vernac v.v;
-        Pp.str "\n"])
+    (Pp.str (Printf.sprintf "((time %f) (id %s) (Control (StmAdd () \"%s\")))"
+              (Unix.gettimeofday ()) (Stateid.to_string state)
+              (Pp.string_of_ppcmds (Ppvernac.pr_vernac v.v))))
 
 let print_state_edit (state : Stateid.t) : unit =
   print_analytics
-    (Pp.seq
-       [Pp.str (Printf.sprintf "EDIT@%fs\n" (Unix.gettimeofday ()));
-        print_state "Stepping back to" state])
+    (Pp.str (Printf.sprintf "((time %f) (Control (StmCancel (%s))))"
+              (Unix.gettimeofday ()) (Stateid.to_string state)))
 
 let print_state_exec (state : Stateid.t) : unit =
   print_analytics
-    (Pp.seq
-       [Pp.str (Printf.sprintf "EXEC@%fs\n" (Unix.gettimeofday ()));
-        print_state "Executing" state])
+    (Pp.str (Printf.sprintf "((time %f) (Control (StmObserve %s)))"
+              (Unix.gettimeofday ()) (Stateid.to_string state)))
 
 (*
  * Setting the hooks
