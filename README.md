@@ -10,6 +10,23 @@ broken proofs. As a result, data from Github reveals little about the proof deve
 Tools that aim to improve the development process for proof engineers ought to have insight
 into how that development process currently works. This plugin will provide those tools with that information.
 
+# Building Analytics
+
+Install `cohttp`:
+
+```
+opam install cohttp-lwt-unix
+```
+
+Once you have done that, you should be able to `make` the plugin.
+For now, you need to add a line to your Makefile.conf:
+
+```
+CAMLPKGS = -package cohttp -package cohttp-lwt-unix -package lwt
+```
+
+But before we release this, hopefully we'll figure out how to make this easier.
+
 # Using Analytics
 
 Just import the plugin:
