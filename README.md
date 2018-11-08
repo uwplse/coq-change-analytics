@@ -15,7 +15,7 @@ into how that development process currently works. This plugin will provide thos
 Install `cohttp`:
 
 ```
-opam install cohttp-lwt-unix
+opam install cohttp cohttp-lwt-unix
 ```
 
 Once you have done that, you should be able to `make` the plugin.
