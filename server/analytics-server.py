@@ -14,6 +14,7 @@ def log_command():
     except:
         print("Got bad plugin message: {}".format(request.form["msg"]))
         print("Ignoring...")
+        return "Failed"
     with open(logpath, 'a') as logfile:
         dump(sexp, logfile)
         logfile.write("\n")
