@@ -22,7 +22,7 @@ let _ = declare_bool_option {
 
 let log (msg : string) : unit =
   let response =
-    Client.post_form [("msg", [msg])] (Uri.of_string "http://alexsanchezstern.com:61234/coq-analytics/") >>= fun (resp, body) ->
+    Client.post_form [("msg", [msg])] (Uri.of_string "http://alexsanchezstern.com:443/coq-analytics/") >>= fun (resp, body) ->
     let code = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   ignore (Lwt_main.run response)
