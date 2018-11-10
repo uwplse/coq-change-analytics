@@ -5,6 +5,8 @@ open Lwt
 open Cohttp
 open Cohttp_lwt_unix
 
+let session_id = (Unix.gettimeofday ())
+
 (* --- Options --- *)
 
 (*
@@ -82,19 +84,19 @@ let print_state (action : string) (state : Stateid.t) : Pp.t =
  *)
 let print_state_add (v : Vernacexpr.vernac_control CAst.t) (state : Stateid.t) : unit =
   print_analytics
-    (Pp.str (Printf.sprintf "((time %f) (id %s) (Control (StmAdd () \"%s\")))"
-              (Unix.gettimeofday ()) (Stateid.to_string state)
+    (Pp.str (Printf.sprintf "((time %f) (id %s) (session %f) (Control (StmAdd () \"%s\")))"
+              (Unix.gettimeofday ()) (Stateid.to_string state) session_id
               (Pp.string_of_ppcmds (Ppvernac.pr_vernac v.v))))
 
 let print_state_edit (state : Stateid.t) : unit =
   print_analytics
-    (Pp.str (Printf.sprintf "((time %f) (Control (StmCancel (%s))))"
-              (Unix.gettimeofday ()) (Stateid.to_string state)))
+    (Pp.str (Printf.sprintf "((time %f) (session %f) (Control (StmCancel (%s))))"
+              (Unix.gettimeofday ()) session_id (Stateid.to_string state)))
 
 let print_state_exec (state : Stateid.t) : unit =
   print_analytics
-    (Pp.str (Printf.sprintf "((time %f) (Control (StmObserve %s)))"
-              (Unix.gettimeofday ()) (Stateid.to_string state)))
+    (Pp.str (Printf.sprintf "((time %f) (session %f) (Control (StmObserve %s)))"
+              (Unix.gettimeofday ()) session_id (Stateid.to_string state)))
 
 (*
  * Setting the hooks
