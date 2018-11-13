@@ -26,6 +26,11 @@ let session_id = Unix.gettimeofday ()
  * URI for the server
  *)
 let server_uri = Uri.of_string "http://alexsanchezstern.com:443/coq-analytics/"
+
+(*
+ * Current logging buffer
+ *)
+let buffer = ref []
                    
 (* --- Options --- *)
 
@@ -55,9 +60,34 @@ let is_debug () : bool =
 (* --- Functionality --- *)
 
 (*
+ * Convert the buffer to a sequence for local debugging
+ *)
+let buffer_to_pp () =
+  Pp.seq (List.rev (! buffer))
+           
+(*
+ * Convert the buffer to a string to send to the server
+ *)
+let buffer_to_string () =
+  String.concat "\n" (List.rev (List.map Pp.string_of_ppcmds (! buffer)))
+
+(* 
+ * Flush the buffer
+ *)
+let flush_buffer () =
+  buffer := []
+
+(*
+ * Add logging info to the buffer
+ *)
+let add_to_buffer (output : Pp.t) : unit =
+  buffer := output :: (! buffer)
+
+(*
  * Log a message and send it to the server
  *)
-let log (msg : string) : unit =
+let log () : unit =
+  let msg = buffer_to_string () in
   let response =
     Client.post_form [("msg", [msg])] server_uri >>= fun (resp, body) ->
     let code = resp |> Response.status |> Code.code_of_status in
@@ -68,11 +98,17 @@ let log (msg : string) : unit =
  * Output analytics, using opt_debug_analytics to determine
  * whether to do so locally or send output to a server
  *)
-let print_analytics (output : Pp.t) : unit =
-  if is_debug () then
-    Feedback.msg_notice output
+let print_analytics (output : Pp.t) (is_exec : bool) : unit =
+  let _ = add_to_buffer output in
+  if is_exec then
+    let _ =
+      if is_debug () then
+        Feedback.msg_notice (buffer_to_pp ())
+      else
+        log ()
+    in flush_buffer ()
   else
-    log (Pp.string_of_ppcmds output)
+    ()
 
 (*
  * Hooks into the document state
@@ -88,6 +124,7 @@ let print_state_add (v : Vernacexpr.vernac_control CAst.t) (state : Stateid.t) :
           session_module
           session_id
           (Pp.string_of_ppcmds (Ppvernac.pr_vernac v.v))))
+    false
 
 let print_state_edit (state : Stateid.t) : unit =
   print_analytics
@@ -99,6 +136,7 @@ let print_state_edit (state : Stateid.t) : unit =
           session_module
           session_id
           (Stateid.to_string state)))
+    false
 
 let print_state_exec (state : Stateid.t) : unit =
   print_analytics
@@ -110,6 +148,7 @@ let print_state_exec (state : Stateid.t) : unit =
           session_module
           session_id
           (Stateid.to_string state)))
+    true
 
 (*
  * Setting the hooks
