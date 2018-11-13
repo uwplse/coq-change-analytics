@@ -6,7 +6,8 @@ open Cohttp
 open Cohttp_lwt_unix
 
 let session_id = (Unix.gettimeofday ())
-
+let server_uri = Uri.of_string "http://alexsanchezstern.com:443/coq-analytics/"
+                   
 (* --- Options --- *)
 
 (*
@@ -20,11 +21,11 @@ let _ = declare_bool_option {
   optkey = ["Debug"; "Analytics"];
   optread = (fun () -> !opt_debug_analytics);
   optwrite = (fun b -> opt_debug_analytics := b);
-          }
+}
 
 let log (msg : string) : unit =
   let response =
-    Client.post_form [("msg", [msg])] (Uri.of_string "http://alexsanchezstern.com:443/coq-analytics/") >>= fun (resp, body) ->
+    Client.post_form [("msg", [msg])] server_uri >>= fun (resp, body) ->
     let code = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   ignore (Lwt_main.run response)
