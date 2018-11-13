@@ -23,13 +23,6 @@ let _ = declare_bool_option {
   optwrite = (fun b -> opt_debug_analytics := b);
 }
 
-let log (msg : string) : unit =
-  let response =
-    Client.post_form [("msg", [msg])] server_uri >>= fun (resp, body) ->
-    let code = resp |> Response.status |> Code.code_of_status in
-    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
-  ignore (Lwt_main.run response)
-
 (*
  * Lookup the debug analytics options.
  * Properly use the table and not the ref because it's probably safer.
@@ -42,6 +35,16 @@ let is_debug () : bool =
 
 (* --- Functionality --- *)
 
+(*
+ * Log a message and send it to the server
+ *)
+let log (msg : string) : unit =
+  let response =
+    Client.post_form [("msg", [msg])] server_uri >>= fun (resp, body) ->
+    let code = resp |> Response.status |> Code.code_of_status in
+    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
+  ignore (Lwt_main.run response)
+           
 (*
  * Output analytics, using opt_debug_analytics to determine
  * whether to do so locally or send output to a server
