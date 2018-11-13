@@ -69,7 +69,9 @@ let buffer_to_pp () =
  * Convert the buffer to a string to send to the server
  *)
 let buffer_to_string () =
-  String.concat "\n" (List.rev (List.map Pp.string_of_ppcmds (! buffer)))
+  Printf.sprintf
+    "(%s)"
+    (String.concat "" (List.rev (List.map Pp.string_of_ppcmds (! buffer))))
 
 (* 
  * Flush the buffer
