@@ -4,9 +4,27 @@ open Goptions
 open Lwt
 open Cohttp
 open Cohttp_lwt_unix
+open Names
 
-let session_modpath = Lib.current_mp ()
+(* --- Constants --- *)
+
+(* 
+ * Module path for the current session
+ *
+ * This appears to work with coqc, but not with coqtop, so for now
+ * the results will only sometimes be useful. I am waiting on Coq Gitter
+ * for a more comprehensive solution.
+ *)
+let session_module = ModPath.to_string (Lib.current_mp ())
+
+(*
+ * ID for the current session
+ *)
 let session_id = Unix.gettimeofday ()
+
+(*
+ * URI for the server
+ *)
 let server_uri = Uri.of_string "http://alexsanchezstern.com:443/coq-analytics/"
                    
 (* --- Options --- *)
@@ -61,19 +79,37 @@ let print_analytics (output : Pp.t) : unit =
  *)
 let print_state_add (v : Vernacexpr.vernac_control CAst.t) (state : Stateid.t) : unit =
   print_analytics
-    (Pp.str (Printf.sprintf "((time %f) (id %s) (session %f) (Control (StmAdd () \"%s\")))"
-              (Unix.gettimeofday ()) (Stateid.to_string state) session_id
-              (Pp.string_of_ppcmds (Ppvernac.pr_vernac v.v))))
+    (Pp.str
+       (Printf.sprintf
+          "((time %f) (id %s) (session-module: %s) (session %f) 
+           (Control (StmAdd () \"%s\")))"
+          (Unix.gettimeofday ())
+          (Stateid.to_string state)
+          session_module
+          session_id
+          (Pp.string_of_ppcmds (Ppvernac.pr_vernac v.v))))
 
 let print_state_edit (state : Stateid.t) : unit =
   print_analytics
-    (Pp.str (Printf.sprintf "((time %f) (session %f) (Control (StmCancel (%s))))"
-              (Unix.gettimeofday ()) session_id (Stateid.to_string state)))
+    (Pp.str
+       (Printf.sprintf
+          "((time %f) (session-module: %s) (session %f) 
+           (Control (StmCancel (%s))))"
+          (Unix.gettimeofday ())
+          session_module
+          session_id
+          (Stateid.to_string state)))
 
 let print_state_exec (state : Stateid.t) : unit =
   print_analytics
-    (Pp.str (Printf.sprintf "((time %f) (session %f) (Control (StmObserve %s)))"
-              (Unix.gettimeofday ()) session_id (Stateid.to_string state)))
+    (Pp.str
+       (Printf.sprintf
+          "((time %f) (session-module: %s) (session %f) 
+           (Control (StmObserve %s)))"
+          (Unix.gettimeofday ())
+          session_module
+          session_id
+          (Stateid.to_string state)))
 
 (*
  * Setting the hooks
