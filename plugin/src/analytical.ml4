@@ -5,7 +5,8 @@ open Lwt
 open Cohttp
 open Cohttp_lwt_unix
 
-let session_id = (Unix.gettimeofday ())
+let session_modpath = Lib.current_mp ()
+let session_id = Unix.gettimeofday ()
 let server_uri = Uri.of_string "http://alexsanchezstern.com:443/coq-analytics/"
                    
 (* --- Options --- *)
@@ -54,34 +55,6 @@ let print_analytics (output : Pp.t) : unit =
     (Feedback.msg_notice output)
   else
     log (Pp.string_of_ppcmds output)
-
-(*
- * From a state ID, get the vernac AST.
- * This will change as Emilio changes the hooks.
- * For now this has a filthy hack to get the doc ID.
- *)
-let vernac_of_state (state : Stateid.t) : Vernacexpr.vernac_control =
-  let doc_id = ref 0 in
-  let feeder = Feedback.add_feeder (fun f -> doc_id := f.doc_id; ()) in
-  Feedback.feedback ~id:state Feedback.Complete;
-  Feedback.del_feeder feeder;
-  let doc = Stm.get_doc (!doc_id) in
-  match Stm.get_ast ~doc state with
-  | Some (_, v) -> v
-  | _ -> failwith "state does not exist"
-
-(*
- * Print a state ID and its AST.
- * We can change the format of this later. For now, this is a proof of concept.
- *)
-let print_state (action : string) (state : Stateid.t) : Pp.t =
-  Pp.seq
-    [Pp.str (Printf.sprintf "%s: " action);
-     Ppvernac.pr_vernac (vernac_of_state state);
-     Pp.str "\n";
-     Pp.str "At ID: ";
-     Pp.str (Stateid.to_string state);
-     Pp.str "\n"]
 
 (*
  * Hooks into the document state
