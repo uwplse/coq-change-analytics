@@ -21,3 +21,5 @@ plugin/Makefile.coq
 plugin/Makefile
 plugin/.merlin
 *.out
+vfiles/testdebug.v
+vfiles/testserver.v
