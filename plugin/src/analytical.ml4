@@ -30,8 +30,8 @@ let server_uri = Uri.of_string "http://alexsanchezstern.com:443/coq-analytics/"
 (* --- Options --- *)
 
 (*
- * When opt_debug_analytics is true, print the output of the Analytics plugin locally.
- * Otherwise (by default), send it to a remote server.
+ * When opt_debug_analytics is true, log locally.
+ * Otherwise (by default), log to a remote server.
  *)
 let opt_debug_analytics = ref (false)
 let _ = declare_bool_option {
@@ -70,7 +70,7 @@ let log (msg : string) : unit =
  *)
 let print_analytics (output : Pp.t) : unit =
   if is_debug () then
-    (Feedback.msg_notice output)
+    Feedback.msg_notice output
   else
     log (Pp.string_of_ppcmds output)
 
