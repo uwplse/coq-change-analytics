@@ -12,8 +12,8 @@ open Names
  * Module path for the current session
  *
  * This appears to work with coqc, but not with coqtop, so for now
- * the results will only sometimes be useful. I am waiting on Coq Gitter
- * for a more comprehensive solution.
+ * the results will only sometimes be useful.
+ * See: https://github.com/coq/coq/issues/8989
  *)
 let session_module = ModPath.to_string (Lib.current_mp ())
 
