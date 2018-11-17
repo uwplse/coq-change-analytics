@@ -23,3 +23,4 @@ plugin/.merlin
 *.out
 plugin/vfiles/testdebug.v
 plugin/vfiles/testserver.v
+plugin/.profile

@@ -31,6 +31,53 @@ let server_uri = Uri.of_string "http://alexsanchezstern.com:443/coq-analytics/"
  * Current logging buffer
  *)
 let buffer = ref []
+
+(*
+ * Name of the user profile file
+ *)
+let profile_file = ".profile"
+
+(*
+ * User ID, which comes from the user profile
+ *)
+let user_id = ref Int64.minus_one
+
+(* --- User Profile --- *)
+
+(*
+ * If the user profile does not exist, ask them to register
+ *
+ * We start by just automatically generating a user ID.
+ * Eventually, we will ask questions like user experience and type,
+ * and send those to the server.
+ *)
+let register () =
+  let output = open_out profile_file in
+  let _ = Random.self_init () in
+  let id = Random.int64 (Int64.max_int) in
+  let _ = output_string output (Int64.to_string id) in
+  close_out output
+
+(*
+ * Open the user profile for reading
+ *)
+let open_profile () =
+  try
+    open_in profile_file
+  with _ ->
+    let _ = register () in
+    try
+      open_in profile_file
+    with _ ->
+      failwith "Cannot find user profile"
+               
+(*
+ * Read the profile, creating it if it doesn't exist
+ *)
+let read_profile =
+  let input = open_profile () in
+  user_id := Int64.of_string (input_line input);
+  close_in input
                    
 (* --- Options --- *)
 
