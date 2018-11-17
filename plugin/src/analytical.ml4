@@ -37,11 +37,6 @@ let buffer = ref []
  *)
 let profile_file = ".profile"
 
-(*
- * User ID, which comes from the user profile
- *)
-let user_id = ref Int64.minus_one
-
 (* --- User Profile --- *)
 
 (*
@@ -72,12 +67,13 @@ let open_profile () =
       failwith "Cannot find user profile"
                
 (*
- * Read the profile, creating it if it doesn't exist
+ * Get the user ID from the profile, creating it if it doesn't exist
  *)
-let read_profile =
+let user_id =
   let input = open_profile () in
-  user_id := Int64.of_string (input_line input);
-  close_in input
+  let id = input_line input in
+  let _ = close_in input in
+  id
                    
 (* --- Options --- *)
 
@@ -166,10 +162,11 @@ let print_state_add (v : Vernacexpr.vernac_control CAst.t) (state : Stateid.t) :
   print_analytics
     (Pp.str
        (Printf.sprintf
-          "((time %f) (id %s) (session-module: %s) (session %f) 
+          "((time %f) (id %s) (user: %s) (session-module: %s) (session %f) 
            (Control (StmAdd () \"%s\")))"
           (Unix.gettimeofday ())
           (Stateid.to_string state)
+          user_id
           session_module
           session_id
           (Pp.string_of_ppcmds (Ppvernac.pr_vernac v.v))))
@@ -179,9 +176,10 @@ let print_state_edit (state : Stateid.t) : unit =
   print_analytics
     (Pp.str
        (Printf.sprintf
-          "((time %f) (session-module: %s) (session %f) 
+          "((time %f) (user: %s) (session-module: %s) (session %f) 
            (Control (StmCancel (%s))))"
           (Unix.gettimeofday ())
+          user_id
           session_module
           session_id
           (Stateid.to_string state)))
@@ -191,9 +189,10 @@ let print_state_exec (state : Stateid.t) : unit =
   print_analytics
     (Pp.str
        (Printf.sprintf
-          "((time %f) (session-module: %s) (session %f) 
+          "((time %f) (user: %s) (session-module: %s) (session %f) 
            (Control (StmObserve %s)))"
           (Unix.gettimeofday ())
+          user_id
           session_module
           session_id
           (Stateid.to_string state)))
