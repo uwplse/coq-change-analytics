@@ -162,7 +162,7 @@ let print_state_add (v : Vernacexpr.vernac_control CAst.t) (state : Stateid.t) :
   print_analytics
     (Pp.str
        (Printf.sprintf
-          "((time %f) (id %s) (user: %s) (session-module: %s) (session %f) 
+          "((time %f) (id %s) (user %s) (session-module %s) (session %f)
            (Control (StmAdd () \"%s\")))"
           (Unix.gettimeofday ())
           (Stateid.to_string state)
@@ -176,7 +176,7 @@ let print_state_edit (state : Stateid.t) : unit =
   print_analytics
     (Pp.str
        (Printf.sprintf
-          "((time %f) (user: %s) (session-module: %s) (session %f) 
+          "((time %f) (user %s) (session-module %s) (session %f)
            (Control (StmCancel (%s))))"
           (Unix.gettimeofday ())
           user_id
@@ -189,7 +189,7 @@ let print_state_exec (state : Stateid.t) : unit =
   print_analytics
     (Pp.str
        (Printf.sprintf
-          "((time %f) (user: %s) (session-module: %s) (session %f) 
+          "((time %f) (user %s) (session-module %s) (session %f)
            (Control (StmObserve %s)))"
           (Unix.gettimeofday ())
           user_id
