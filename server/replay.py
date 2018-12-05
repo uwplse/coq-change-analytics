@@ -43,7 +43,6 @@ def try_loads(sexp):
         assert get_user(entry)
         assert get_time(entry)
         assert get_session(entry)
-        assert get_id(entry)
         return entry
     except:
         return None
@@ -72,5 +71,7 @@ def main():
             print("{}: {}".format(get_id(cmd), get_body(cmd)[1][2]))
         elif get_cmd_type(cmd) == Symbol("StmCancel"):
             print("CANCEL {}".format(get_body(cmd)[1][1][0]))
+        else:
+            assert get_cmd_type(cmd) == Symbol("StmObserve")
 
 main()
