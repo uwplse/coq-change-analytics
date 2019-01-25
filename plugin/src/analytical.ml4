@@ -25,7 +25,7 @@ let session_id = Unix.gettimeofday ()
 (*
  * URI for the server
  *)
-let server_uri = Uri.of_string "http://alexsanchezstern.com:443/coq-analytics/"
+let server_uri = Uri.of_string "http://ec2-18-225-35-143.us-east-2.compute.amazonaws.com:44/coq-analytics/"
 
 (*
  * Current logging buffer
