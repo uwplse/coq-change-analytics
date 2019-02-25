@@ -2,8 +2,11 @@
 
 from sexpdata import loads, dump, Symbol
 from flask import Flask, request
+import random
+from datetime import datetime
 
 logpath = "log.txt"
+userpath = "users.txt"
 
 app = Flask(__name__)
 
@@ -20,3 +23,14 @@ def log_command():
         print("Ignoring...")
         return "Failed"
     return 'Submitted'
+
+@app.route("/register/", methods=["POST"])
+def register():
+    users = open(userpath, 'r')
+    uid = str(len(users.readlines()) + 1) 
+    users.close()
+    users = open(userpath, 'a')
+    users.write(uid)
+    users.write("\n")
+    users.close()
+    return uid

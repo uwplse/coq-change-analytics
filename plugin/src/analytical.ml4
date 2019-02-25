@@ -35,7 +35,7 @@ let buffer = ref []
 (*
  * Name of the user profile file
  *)
-let profile_file = ".profile"
+let profile_file = ".analytics_profile"
 
 (* --- User Profile --- *)
 
@@ -47,10 +47,14 @@ let profile_file = ".profile"
  * and send those to the server.
  *)
 let register () =
+  let register_uri = Uri.with_path server_uri "/register/" in
   let output = open_out profile_file in
-  let _ = Random.self_init () in
-  let id = Random.int64 (Int64.max_int) in
-  let _ = output_string output (Int64.to_string id) in
+  let response =
+    Client.post_form [] register_uri >>= fun (resp, body) ->
+    let code = resp |> Response.status |> Code.code_of_status in
+    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
+  let id = Lwt_main.run response in
+  let _ = output_string output id in
   close_out output
 
 (*
