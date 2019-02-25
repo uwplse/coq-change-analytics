@@ -40,7 +40,7 @@ let profile_file = ".analytics_profile"
 (*
  * Current profile version
  *)
-let current_version = "1"
+let current_version = "2"
 
 (* --- User Profile --- *)
                      
@@ -92,6 +92,16 @@ let get_profile_version id =
  * Update a user profile
  *)
 let update_profile () =
+  let _ = print_string "Thank you for using Coq Change Analytics!" in
+  let _ = print_newline () in
+  let _ = print_string "We need more information from you before continuing." in
+  let _ = print_newline () in
+  let _ =
+    print_string
+      ("If you have filled this out before, then we have since " ^
+       "updated these questions, and your profile is now out of date.")
+  in
+  let _ = print_newline () in
   () (* no questions, yet *)
                
 (*
