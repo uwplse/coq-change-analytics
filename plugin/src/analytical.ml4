@@ -37,8 +37,13 @@ let buffer = ref []
  *)
 let profile_file = ".analytics_profile"
 
-(* --- User Profile --- *)
+(*
+ * Current profile version
+ *)
+let current_version = "1"
 
+(* --- User Profile --- *)
+                     
 (*
  * If the user profile does not exist, ask them to register
  *
@@ -54,7 +59,7 @@ let register () =
     let code = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   let id = Lwt_main.run response in
-  let _ = output_string output id in
+  let _ = Printf.fprintf output "%s\n" id in
   close_out output
 
 (*
@@ -69,6 +74,25 @@ let open_profile () =
       open_in profile_file
     with _ ->
       failwith "Cannot find user profile"
+
+(*
+ * Prompt the server for information on the user,
+ * to determine whether it's necessary to ask the user more questions
+ *)
+let get_profile_version id =
+  let profile_uri = Uri.with_path server_uri "/profile-version/" in
+  let response =
+    let params = ("id", id) in
+    Client.get (Uri.add_query_param' profile_uri params) >>= fun (resp, body) ->
+    let code = resp |> Response.status |> Code.code_of_status in
+    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
+  Lwt_main.run response
+               
+(*
+ * Update a user profile
+ *)
+let update_profile () =
+  () (* no questions, yet *)
                
 (*
  * Get the user ID from the profile, creating it if it doesn't exist
@@ -77,7 +101,12 @@ let user_id =
   let input = open_profile () in
   let id = input_line input in
   let _ = close_in input in
-  id
+  let version = get_profile_version id in
+  if version = current_version then
+    id
+  else
+    let _ = update_profile () in
+    id
                    
 (* --- Options --- *)
 

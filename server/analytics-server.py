@@ -34,3 +34,8 @@ def register():
     users.write("\n")
     users.close()
     return uid
+
+@app.route("/profile-version/", methods=["GET"])
+def get_profile_version():
+    return "1"
+
