@@ -41,6 +41,21 @@ let profile_file = ".analytics_profile"
  * Current profile version
  *)
 let current_version = "2"
+                        
+(*
+ * Questions for a user profile
+ * TODO add more
+ * TODO give users a way to deliberately fix these if they mess up
+ *)   
+let profile_questions =
+  [(
+      "First, please tell us how long you have been using Coq",
+      ["Less than 6 months";
+       "6 months to 1 year";
+       "1 to 2 years";
+       "2 to 4 years";
+       "4 or more years"]
+  )]
 
 (* --- User Profile --- *)
                      
@@ -90,6 +105,9 @@ let get_profile_version id =
                
 (*
  * Update a user profile
+ * TODO!!! Move to Feedback.msg_notice, and clean
+ * TODO!!! Also consider the input method if you do that
+ * TODO!!! server-side code
  *)
 let update_profile () =
   let _ = print_string "Thank you for using Coq Change Analytics!" in
@@ -102,7 +120,25 @@ let update_profile () =
        "updated these questions, and your profile is now out of date.")
   in
   let _ = print_newline () in
-  () (* no questions, yet *)
+  let _ = print_newline () in
+  List.iter
+    (fun (q, ans) ->
+      let _ = print_string q in
+      let _ = print_string ":" in
+      let _ = print_newline () in
+      let _ =
+        List.iteri
+          (fun i a ->
+            let _ = print_int (i + 1) in
+            let _ = print_string ") " in
+            let _ = print_string a in
+            print_newline ())
+          ans
+      in
+      let _ = print_newline () in
+      let choice = read_int () in (* TODO make this prompt user if they don't give possible option, and catch non-int failures too *)
+      ())
+    profile_questions
                
 (*
  * Get the user ID from the profile, creating it if it doesn't exist
