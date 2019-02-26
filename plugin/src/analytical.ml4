@@ -55,6 +55,14 @@ let profile_questions =
        "1 to 2 years";
        "2 to 4 years";
        "4 or more years"]
+    );
+   (
+     "Please tell us what you primarily use Coq for",
+     ["Taking a class";
+      "Teaching a class";
+      "Verifying software";
+      "Writing mathematical proofs"
+     ]   
   )]
 
 (* --- User Profile --- *)
