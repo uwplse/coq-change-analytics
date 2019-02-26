@@ -44,7 +44,6 @@ let current_version = "2"
                         
 (*
  * Questions for a user profile
- * TODO add more
  * TODO give users a way to deliberately fix these if they mess up
  *)   
 let profile_questions =
@@ -61,9 +60,36 @@ let profile_questions =
      ["Taking a class";
       "Teaching a class";
       "Verifying software";
-      "Writing mathematical proofs"
-     ]   
-  )]
+      "Writing mathematical proofs";
+      "Contributing to Coq";
+      "Building Coq tooling";
+      "Other"]   
+   );
+   (
+     "Please rate your experience level in Coq",
+     ["Beginner";
+      "Novice";
+      "Intermediate";
+      "Knowledgeable";
+      "Expert"]
+   );
+   (
+     "Please indicate how often you use Coq",
+     ["Less than once per month";
+      "A few times per month";
+      "Once per week";
+      "A few times per week";
+      "Daily"]
+   );
+   (
+     "Please tell us which user interface you typically use",
+     ["coqtop";
+      "coqc";
+      "CoqIDE";
+      "Proof General";
+      "other"]
+   )
+  ]
 
 (* --- User Profile --- *)
                      
@@ -129,24 +155,28 @@ let update_profile () =
   in
   let _ = print_newline () in
   let _ = print_newline () in
-  List.iter
-    (fun (q, ans) ->
-      let _ = print_string q in
-      let _ = print_string ":" in
-      let _ = print_newline () in
-      let _ =
-        List.iteri
-          (fun i a ->
-            let _ = print_int (i + 1) in
-            let _ = print_string ") " in
-            let _ = print_string a in
-            print_newline ())
-          ans
-      in
-      let _ = print_newline () in
-      let choice = read_int () in (* TODO make this prompt user if they don't give possible option, and catch non-int failures too *)
-      ())
-    profile_questions
+  let _ =
+    List.iter
+      (fun (q, ans) ->
+        let _ = print_string q in
+        let _ = print_string ":" in
+        let _ = print_newline () in
+        let _ =
+          List.iteri
+            (fun i a ->
+              let _ = print_int (i + 1) in
+              let _ = print_string ") " in
+              let _ = print_string a in
+              print_newline ())
+            ans
+        in
+        let _ = print_newline () in
+        let choice = read_int () in (* TODO make this prompt user if they don't give possible option, and catch non-int failures too *)
+        print_newline ())
+      profile_questions
+  in
+  let _ = print_string "All set. Thank you!" in
+  print_newline ()
                
 (*
  * Get the user ID from the profile, creating it if it doesn't exist
