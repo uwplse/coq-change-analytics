@@ -6,6 +6,11 @@ open Cohttp
 open Cohttp_lwt_unix
 open Names
 
+(*
+ * TODO update server too
+ * TODO if easy, just add a -debug option for local testing (server_uri)
+ *)
+
 (* --- Constants --- *)
 
 (* 
@@ -24,6 +29,7 @@ let session_id = Unix.gettimeofday ()
 
 (*
  * URI for the server
+ * TODO debug
  *)
 let server_uri = Uri.of_string "http://ec2-18-225-35-143.us-east-2.compute.amazonaws.com:44/coq-analytics/"
 
@@ -45,6 +51,7 @@ let current_version = "2"
 (*
  * Questions for a user profile
  * TODO give users a way to deliberately fix these if they mess up
+ * TODO all of this should be serverside, including versioning
  *)   
 let profile_questions =
   [(
@@ -172,6 +179,7 @@ let update_profile () =
         in
         let _ = print_newline () in
         let choice = read_int () in (* TODO make this prompt user if they don't give possible option, and catch non-int failures too *)
+        (* TODO save choice somewhere *)
         print_newline ())
       profile_questions
   in
