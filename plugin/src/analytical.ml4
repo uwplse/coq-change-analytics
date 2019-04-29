@@ -29,9 +29,14 @@ let session_id = Unix.gettimeofday ()
 
 (*
  * URI for the server
- * TODO debug
  *)
 let server_uri = Uri.of_string "http://ec2-18-225-35-143.us-east-2.compute.amazonaws.com:44/coq-analytics/"
+
+(*
+ * Local server URI for testing
+ * TODO add a debug option to switch to this
+ *)
+let debug_server_uri = Uri.of_string "http://localhost:44/coq-analytics/"
 
 (*
  * Current logging buffer
