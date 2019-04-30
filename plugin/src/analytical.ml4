@@ -9,6 +9,7 @@ open Names
 (*
  * TODO update server too
  * TODO if easy, just add a -debug option for local testing (server_uri)
+ * TODO have a way to have users agree not to spoof other users
  *)
 
 (* --- Constants --- *)
@@ -28,17 +29,17 @@ let session_module = ModPath.to_string (Lib.current_mp ())
 let session_id = Unix.gettimeofday ()
 
 (*
- * URI for the server
+ * URI for the remote server
  *)
-let server_uri = Uri.of_string "http://ec2-18-225-35-143.us-east-2.compute.amazonaws.com:44/coq-analytics/"
+(*let server_uri = Uri.of_string "http://ec2-18-225-35-143.us-east-2.compute.amazonaws.com:44/coq-analytics/"*)
 
 (*
  * Local server URI for testing
  * TODO add a debug option to switch to this
  * TODO before pushing, set to 44 and don't push start-server.sh
  *)
-let debug_server_uri = Uri.of_string "http://localhost:4444/coq-analytics/"
-
+let server_uri = Uri.of_string "http://localhost:4444/coq-analytics/"
+                                     
 (*
  * Current logging buffer
  *)
@@ -58,6 +59,7 @@ let current_version = "2"
  * Questions for a user profile
  * TODO give users a way to deliberately fix these if they mess up
  * TODO all of this should be serverside, including versioning
+ * TODO remove once we have serverside
  *)   
 let profile_questions =
   [(
@@ -199,7 +201,7 @@ let user_id =
   let input = open_profile () in
   let id = input_line input in
   let _ = close_in input in
-  let version = get_profile_version id in
+  let version = get_profile_version id in (* TODO if none in server, return 0 *)
   if version = current_version then
     id
   else

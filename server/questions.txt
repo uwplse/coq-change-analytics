@@ -1,0 +1,42 @@
+((question 
+  "First, please tell us how long you have been using Coq" 
+  (answers 
+     "Less than 6 months" 
+     "6 months to 1 year"
+     "1 to 2 years"
+     "2 to 4 years"
+     "4 or more years"))
+(question 
+  "Please tell us what you primarily use Coq for" 
+  (answers 
+     "Taking a class";
+     "Teaching a class";
+     "Verifying software";
+     "Writing mathematical proofs";
+     "Contributing to Coq";
+     "Building Coq tooling";
+     "Other"))
+(question 
+  "Please rate your experience level in Coq"
+  (answers 
+     "Beginner";
+     "Novice";
+     "Intermediate";
+     "Knowledgeable";
+     "Expert"))
+(question 
+  "Please indicate how often you use Coq"
+  (answers 
+     "Less than once per month";
+     "A few times per month";
+     "Once per week";
+     "A few times per week";
+     "Daily"))
+(question 
+  "Please tell us which user interface you typically use"
+  (answers 
+     "coqtop";
+     "coqc";
+     "CoqIDE";
+     "Proof General";
+     "other")))

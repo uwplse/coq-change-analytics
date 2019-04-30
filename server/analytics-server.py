@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python
 
-from sexpdata import loads, dump, Symbol
+from sexpdata import load, loads, dump, dumps, Symbol
 from flask import Flask, request
 import random
 from datetime import datetime
@@ -31,19 +31,21 @@ def log_command():
         return "Failed"
     return 'Submitted'
 
-def ask_reg_questions(uid):
+def ask_reg_questions(uid_sexp):
     # TODO ask the questions and send back to the client
-    return uid
+    return dumps(uid_sexp)
 
 @app.route("/register/", methods=["POST"])
 def register():
     users = open(userpath, 'r')
-    uid = str(len(users.readlines()) + 1)
-    users = open(userpath, 'a')
-    dump([[Symbol("user"), str(uid)]], users)
+    last_uid = int(load(users)[1])
+    new_uid = str(last_uid + 1)
+    new_uid_sexp = [Symbol("user"), new_uid]
+    users = open(userpath, 'w')
+    dump(new_uid_sexp, users)
     users.write("\n")
     # TODO ask the questions and send back to the client along w/ UID
-    return ask_reg_questions(uid)
+    return ask_reg_questions(new_uid_sexp)
 
 @app.route("/sync-profile/", methods=["GET"])
 def login():
