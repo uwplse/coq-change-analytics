@@ -31,21 +31,19 @@ def log_command():
         return "Failed"
     return 'Submitted'
 
-def ask_reg_questions(uid_sexp):
-    # TODO ask the questions and send back to the client
-    return dumps(uid_sexp)
-
 @app.route("/register/", methods=["POST"])
 def register():
-    users = open(userpath, 'r')
-    last_uid = int(load(users)[1])
-    new_uid = str(last_uid + 1)
-    new_uid_sexp = [Symbol("user"), new_uid]
-    users = open(userpath, 'w')
-    dump(new_uid_sexp, users)
-    users.write("\n")
-    # TODO ask the questions and send back to the client along w/ UID
-    return ask_reg_questions(new_uid_sexp)
+    try:
+        users = open(userpath, 'r')
+        last_uid = int(load(users)[1])
+        new_uid = str(last_uid + 1)
+    except:
+        new_uid = "1"
+    finally:
+        users = open(userpath, 'w')
+        dump([Symbol("user"), new_uid], users)
+        users.write("\n")
+        return str(new_uid)
 
 @app.route("/sync-profile/", methods=["GET"])
 def login():
