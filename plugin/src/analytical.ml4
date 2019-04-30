@@ -48,63 +48,7 @@ let buffer = ref []
 (*
  * Name of the user profile file
  *)
-let profile_file = ".analytics_profile"
-
-(*
- * Current profile version
- *)
-let current_version = "2"
-                        
-(*
- * Questions for a user profile
- * TODO give users a way to deliberately fix these if they mess up
- * TODO all of this should be serverside, including versioning
- * TODO remove once we have serverside
- *)   
-let profile_questions =
-  [(
-      "First, please tell us how long you have been using Coq",
-      ["Less than 6 months";
-       "6 months to 1 year";
-       "1 to 2 years";
-       "2 to 4 years";
-       "4 or more years"]
-    );
-   (
-     "Please tell us what you primarily use Coq for",
-     ["Taking a class";
-      "Teaching a class";
-      "Verifying software";
-      "Writing mathematical proofs";
-      "Contributing to Coq";
-      "Building Coq tooling";
-      "Other"]   
-   );
-   (
-     "Please rate your experience level in Coq",
-     ["Beginner";
-      "Novice";
-      "Intermediate";
-      "Knowledgeable";
-      "Expert"]
-   );
-   (
-     "Please indicate how often you use Coq",
-     ["Less than once per month";
-      "A few times per month";
-      "Once per week";
-      "A few times per week";
-      "Daily"]
-   );
-   (
-     "Please tell us which user interface you typically use",
-     ["coqtop";
-      "coqc";
-      "CoqIDE";
-      "Proof General";
-      "other"]
-   )
-  ]
+let profile_file = ".analytics_profile"                   
 
 (* --- User Profile --- *)
                      
@@ -143,8 +87,8 @@ let open_profile () =
  * Prompt the server for information on the user,
  * to determine whether it's necessary to ask the user more questions
  *)
-let get_profile_version id =
-  let profile_uri = Uri.with_path server_uri "/profile-version/" in
+let sync_profile_questions id =
+  let profile_uri = Uri.with_path server_uri "/sync-profile/" in
   let response =
     let params = ("id", id) in
     Client.get (Uri.add_query_param' profile_uri params) >>= fun (resp, body) ->
@@ -158,8 +102,12 @@ let get_profile_version id =
  * TODO!!! Also consider the input method if you do that
  * TODO!!! server-side code
  *)
-let update_profile () =
-  let _ = print_string "Thank you for using Coq Change Analytics!" in
+let sync_profile id =
+  let questions = sync_profile_questions id in
+  let _ = print_string questions in (* TODO *)
+  print_newline ()
+  
+ (* let _ = print_string "Thank you for using Coq Change Analytics!" in
   let _ = print_newline () in
   let _ = print_string "We need more information from you before continuing." in
   let _ = print_newline () in
@@ -192,21 +140,18 @@ let update_profile () =
       profile_questions
   in
   let _ = print_string "All set. Thank you!" in
-  print_newline ()
+  print_newline ()*)
                
 (*
  * Get the user ID from the profile, creating it if it doesn't exist
+ * Prompt the user for extra information if the server says so
  *)
 let user_id =
   let input = open_profile () in
   let id = input_line input in
   let _ = close_in input in
-  let version = get_profile_version id in (* TODO if none in server, return 0 *)
-  if version = current_version then
-    id
-  else
-    let _ = update_profile () in
-    id
+  let _ = sync_profile id in
+  id
                    
 (* --- Options --- *)
 

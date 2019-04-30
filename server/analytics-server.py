@@ -38,7 +38,7 @@ def register():
         last_uid = int(load(users)[1])
         new_uid = str(last_uid + 1)
     except:
-        new_uid = "1"
+        new_uid = "0"
     finally:
         users = open(userpath, 'w')
         dump([Symbol("user"), new_uid], users)
@@ -46,11 +46,13 @@ def register():
         return str(new_uid)
 
 @app.route("/sync-profile/", methods=["GET"])
-def login():
+def sync_profile():
+    uid = request.args.get('id')
     # TODO check profile version
+    # TODO if profile file empty, create, and let version be zero
     # TODO if it's the latest version, then do nothing
     # TODO otherwise, ask the registration questions; client will check both cases and act accordingly
-    return "foo"
+    return uid
 
 # TODO client pings this for new profiles and updated profiles after getting reg question answers
 # TODO passes us UID, answers
@@ -59,7 +61,3 @@ def login():
 def update_profile():
     return "1" # TODO
 
-@app.route("/profile-version/", methods=["GET"])
-def get_profile_version():
-    users = open (userpath, 'r')
-    return version_id # TODO get the version from the users file
