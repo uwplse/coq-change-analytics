@@ -35,8 +35,9 @@ let server_uri = Uri.of_string "http://ec2-18-225-35-143.us-east-2.compute.amazo
 (*
  * Local server URI for testing
  * TODO add a debug option to switch to this
+ * TODO before pushing, set to 44 and don't push start-server.sh
  *)
-let debug_server_uri = Uri.of_string "http://localhost:44/coq-analytics/"
+let debug_server_uri = Uri.of_string "http://localhost:4444/coq-analytics/"
 
 (*
  * Current logging buffer
