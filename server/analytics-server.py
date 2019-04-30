@@ -7,8 +7,7 @@ from datetime import datetime
 
 logpath = "log.txt"
 userpath = "users.txt"
-profilepath = "profiles.txt"
-version_id = "1"
+version_id = "2"
 
 app = Flask(__name__)
 
@@ -35,24 +34,31 @@ def log_command():
 def register():
     try:
         users = open(userpath, 'r')
-        last_uid = int(load(users)[1])
-        new_uid = str(last_uid + 1)
+        profiles = load(users)
+        new_uid = str(len(profiles))
+        users.close()
     except:
+        profiles = []
         new_uid = "0"
     finally:
         users = open(userpath, 'w')
-        dump([Symbol("user"), new_uid], users)
+        dump(profiles + [[[Symbol("user"), new_uid]] + [[Symbol("version"), "0"]]], users)
         users.write("\n")
+        users.close()
         return str(new_uid)
 
 @app.route("/sync-profile/", methods=["GET"])
 def sync_profile():
-    uid = request.args.get('id')
-    # TODO check profile version
-    # TODO if profile file empty, create, and let version be zero
-    # TODO if it's the latest version, then do nothing
-    # TODO otherwise, ask the registration questions; client will check both cases and act accordingly
-    return uid
+    uid = int(request.args.get('id'))
+    users = open(userpath, 'r')
+    profile = load(users)[uid]
+    users.close()
+    version = profile[1][1]
+    if version == version_id:
+        return "Welcome back!"
+    else:
+        # TODO ask questions
+        return "Work in progress"
 
 # TODO client pings this for new profiles and updated profiles after getting reg question answers
 # TODO passes us UID, answers
