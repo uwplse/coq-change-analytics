@@ -8,6 +8,7 @@ open Names
 open Sexplib
 
 (*
+ * TODO use sexplib to form sexps too
  * TODO update server too
  * TODO if easy, just add a -debug option for local testing (server_uri)
  * TODO have a way to have users agree not to spoof other users
@@ -105,9 +106,14 @@ let sync_profile_questions id =
  * TODO!!! server-side code
  *)
 let sync_profile id =
-  let questions = sync_profile_questions id in
-  let _ = print_string (Sexp.to_string questions) in (* TODO *)
-  print_newline ()
+  let qs = sync_profile_questions id in
+  List.iter
+    (List.iter
+       (fun q ->
+         (* TODO ask question and get answer *)
+         print_string q;
+         print_newline ()))
+    (Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs)
   
  (* let _ = print_string "Thank you for using Coq Change Analytics!" in
   let _ = print_newline () in

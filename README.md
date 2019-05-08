@@ -12,10 +12,10 @@ into how that development process currently works. This plugin will provide thos
 
 # Building Analytics
 
-Install `cohttp`:
+Install `sexplib` and `cohttp`:
 
 ```
-opam install cohttp cohttp-lwt-unix
+opam install sexplib cohttp cohttp-lwt-unix
 ```
 
 Once you have done that, you should be able to `make` the plugin.
