@@ -5,6 +5,7 @@ open Lwt
 open Cohttp
 open Cohttp_lwt_unix
 open Names
+open Sexplib
 
 (*
  * TODO update server too
@@ -94,17 +95,18 @@ let sync_profile_questions id =
     Client.get (Uri.add_query_param' profile_uri params) >>= fun (resp, body) ->
     let code = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
-  Lwt_main.run response
+  Sexp.of_string (Lwt_main.run response)
                
 (*
  * Update a user profile
  * TODO!!! Move to Feedback.msg_notice, and clean
+ * TODO handle empty case
  * TODO!!! Also consider the input method if you do that
  * TODO!!! server-side code
  *)
 let sync_profile id =
   let questions = sync_profile_questions id in
-  let _ = print_string questions in (* TODO *)
+  let _ = print_string (Sexp.to_string questions) in (* TODO *)
   print_newline ()
   
  (* let _ = print_string "Thank you for using Coq Change Analytics!" in
