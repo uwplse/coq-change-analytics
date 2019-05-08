@@ -7,6 +7,7 @@ from datetime import datetime
 
 logpath = "log.txt"
 userpath = "users.txt"
+questionpath = "questions.txt"
 version_id = "2"
 
 app = Flask(__name__)
@@ -57,8 +58,9 @@ def sync_profile():
     if version == version_id:
         return "Welcome back!"
     else:
-        # TODO ask questions
-        return "Work in progress"
+        question_store = open(questionpath, 'r')
+        questions = dumps(load(question_store))
+        return questions
 
 # TODO client pings this for new profiles and updated profiles after getting reg question answers
 # TODO passes us UID, answers
