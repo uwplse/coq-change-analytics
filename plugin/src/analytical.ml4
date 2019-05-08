@@ -107,15 +107,7 @@ let sync_profile_questions id =
  *)
 let sync_profile id =
   let qs = sync_profile_questions id in
-  List.iter
-    (List.iter
-       (fun q ->
-         (* TODO ask question and get answer *)
-         print_string q;
-         print_newline ()))
-    (Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs)
-  
- (* let _ = print_string "Thank you for using Coq Change Analytics!" in
+  let _ = print_string "Thank you for using Coq Change Analytics!" in
   let _ = print_newline () in
   let _ = print_string "We need more information from you before continuing." in
   let _ = print_newline () in
@@ -128,9 +120,8 @@ let sync_profile id =
   let _ = print_newline () in
   let _ =
     List.iter
-      (fun (q, ans) ->
-        let _ = print_string q in
-        let _ = print_string ":" in
+      (fun q_and_as ->
+        let _ = print_string (List.hd q_and_as) in
         let _ = print_newline () in
         let _ =
           List.iteri
@@ -139,16 +130,16 @@ let sync_profile id =
               let _ = print_string ") " in
               let _ = print_string a in
               print_newline ())
-            ans
+            (List.tl q_and_as)
         in
         let _ = print_newline () in
         let choice = read_int () in (* TODO make this prompt user if they don't give possible option, and catch non-int failures too *)
         (* TODO save choice somewhere *)
         print_newline ())
-      profile_questions
+      (Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs)
   in
   let _ = print_string "All set. Thank you!" in
-  print_newline ()*)
+  print_newline ()
                
 (*
  * Get the user ID from the profile, creating it if it doesn't exist
