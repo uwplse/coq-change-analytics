@@ -97,7 +97,19 @@ let sync_profile_questions id =
     let code = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   Sexp.of_string (Lwt_main.run response)
-               
+
+(* TODO explain *)
+let update_profile id answers =
+  let update_uri = Uri.with_path server_uri "/update-profile/" in
+  let params = [("id", [id]); ("answers", [Sexp.to_string answers])] in
+  let response =
+    Client.post_form params update_uri >>= fun (resp, body) ->
+    let code = resp |> Response.status |> Code.code_of_status in
+    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
+  let version = Lwt_main.run response in (* TODO *)
+  print_string version;
+  ()
+                 
 (*
  * Update a user profile
  * TODO!!! Move to Feedback.msg_notice, and clean
@@ -118,8 +130,8 @@ let sync_profile id =
   in
   let _ = print_newline () in
   let _ = print_newline () in
-  let _ =
-    List.iter
+  let answers =
+    List.map
       (fun q_and_as ->
         let _ = print_string (List.hd q_and_as) in
         let _ = print_newline () in
@@ -136,20 +148,16 @@ let sync_profile id =
         let _ = print_newline () in
         let rec get_answer choices = (* TODO refactor *)
           try
-            List.nth choices (read_int () - 1)
+            let offset = read_int () - 1 in
+            let _ = List.nth choices offset in
+            offset
           with _ ->
             let _ = print_string "Invalid input, please try again" in
             let _ = print_newline () in
             get_answer choices
-        in
-        let choice = get_answer choices in
-        (* TODO save answer somewhere, then send to server *)
-        print_string choice;
-        print_newline ())
+        in get_answer choices)
       (Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs)
-  in
-  let _ = print_string "All set. Thank you!" in
-  print_newline ()
+  in update_profile id (Base.List.sexp_of_t Base.Int.sexp_of_t answers)
                
 (*
  * Get the user ID from the profile, creating it if it doesn't exist
