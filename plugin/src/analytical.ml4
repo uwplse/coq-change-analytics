@@ -96,7 +96,8 @@ let sync_profile_questions id =
     Client.get (Uri.add_query_param' profile_uri params) >>= fun (resp, body) ->
     let code = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
-  Sexp.of_string (Lwt_main.run response)
+  let qs = Sexp.of_string (Lwt_main.run response) in
+  Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs
 
 (* TODO explain *)
 let update_profile id answers =
@@ -117,50 +118,54 @@ let update_profile id answers =
  *)
 let sync_profile id =
   let qs = sync_profile_questions id in
-  let _ = print_string "Thank you for using Coq Change Analytics!" in
-  let _ = print_newline () in
-  let _ = print_string "We need more information from you before continuing." in
-  let _ = print_newline () in
-  let _ =
-    print_string
-      ("If you have filled this out before, then we have since " ^
-       "updated these questions, and your profile is now out of date.")
-  in
-  let _ = print_newline () in
-  let _ = print_newline () in
-  let answers =
-    List.map
-      (fun q_and_as ->
-        let _ = print_newline () in
-        let _ = print_string (List.hd q_and_as) in
-        let _ = print_newline () in
-        let choices = List.tl q_and_as in
-        let _ =
-          List.iteri
-            (fun i a ->
-              let _ = print_int (i + 1) in
-              let _ = print_string ") " in
-              let _ = print_string a in
-              print_newline ())
-            choices
-        in
-        let _ = print_newline () in
-        let rec get_answer choices = (* TODO refactor *)
-          try
-            let offset = read_int () - 1 in
-            let _ = List.nth choices offset in
-            offset
-          with _ ->
-            let _ = print_string "Invalid input, please try again" in
-            let _ = print_newline () in
-            get_answer choices
-        in get_answer choices)
-      (Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs)
-  in
-  let _ = update_profile id (Base.List.sexp_of_t Base.Int.sexp_of_t answers) in
-  let _ = print_string "Thank you!" in
-  print_newline ()
-               
+  if List.length qs = 0 then
+    let _ = print_string "Welcome back!" in
+    print_newline ()
+  else
+    let _ = print_string "Thank you for using Coq Change Analytics!" in
+    let _ = print_newline () in
+    let _ = print_string "We need more information from you before continuing." in
+    let _ = print_newline () in
+    let _ =
+      print_string
+        ("If you have filled this out before, then we have since " ^
+           "updated these questions, and your profile is now out of date.")
+    in
+    let _ = print_newline () in
+    let _ = print_newline () in
+    let answers =
+      List.map
+        (fun q_and_as ->
+          let _ = print_newline () in
+          let _ = print_string (List.hd q_and_as) in
+          let _ = print_newline () in
+          let choices = List.tl q_and_as in
+          let _ =
+            List.iteri
+              (fun i a ->
+                let _ = print_int (i + 1) in
+                let _ = print_string ") " in
+                let _ = print_string a in
+                print_newline ())
+              choices
+          in
+          let _ = print_newline () in
+          let rec get_answer choices = (* TODO refactor *)
+            try
+              let offset = read_int () - 1 in
+              let _ = List.nth choices offset in
+              offset
+            with _ ->
+              let _ = print_string "Invalid input, please try again" in
+              let _ = print_newline () in
+              get_answer choices
+          in get_answer choices)
+        qs
+    in
+    let _ = update_profile id (Base.List.sexp_of_t Base.Int.sexp_of_t answers) in
+    let _ = print_string "Thank you!" in
+    print_newline ()
+                  
 (*
  * Get the user ID from the profile, creating it if it doesn't exist
  * Prompt the user for extra information if the server says so

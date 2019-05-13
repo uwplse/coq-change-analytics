@@ -56,15 +56,12 @@ def sync_profile():
     users.close()
     version = profile[1][1]
     if version == version_id:
-        return "Welcome back!"
+        return dumps([])
     else:
         question_store = open(questionpath, 'r')
         questions = dumps(load(question_store))
         return questions
 
-# TODO client pings this for new profiles and updated profiles after getting reg question answers
-# TODO passes us UID, answers
-# TODO we write the UID, version ID, and answers to the profilepath
 # TODO explain
 # TODO obviously some consistency bugs are possible, but eh. obviously not the best way, but it's a way
 # TODO refactor common code
