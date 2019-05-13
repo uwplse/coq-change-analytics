@@ -65,7 +65,19 @@ def sync_profile():
 # TODO client pings this for new profiles and updated profiles after getting reg question answers
 # TODO passes us UID, answers
 # TODO we write the UID, version ID, and answers to the profilepath
+# TODO explain
+# TODO obviously some consistency bugs are possible, but eh. obviously not the best way, but it's a way
+# TODO refactor common code
 @app.route("/update-profile/", methods=["POST"])
 def update_profile():
-    return "1" # TODO
+    uid = request.form["id"]
+    answers = loads(request.form["answers"]) # list of 0-indexed offsets of answers for each question
+    users = open(userpath, 'r')
+    profiles = load(users)
+    users.close()
+    users = open(userpath, 'w')
+    new_profile = [[Symbol("user"), uid]] + [[Symbol("version"), version_id]] + [[Symbol("answers"), answers]]
+    profiles[int(uid)] = new_profile
+    dump(profiles, users) 
+    return "Updated"
 

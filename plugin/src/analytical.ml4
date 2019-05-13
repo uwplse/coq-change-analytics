@@ -105,10 +105,8 @@ let update_profile id answers =
   let response =
     Client.post_form params update_uri >>= fun (resp, body) ->
     let code = resp |> Response.status |> Code.code_of_status in
-    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
-  let version = Lwt_main.run response in (* TODO *)
-  print_string version;
-  ()
+    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in (* TODO ref. *)
+  Lwt_main.run response
                  
 (*
  * Update a user profile
@@ -133,6 +131,7 @@ let sync_profile id =
   let answers =
     List.map
       (fun q_and_as ->
+        let _ = print_newline () in
         let _ = print_string (List.hd q_and_as) in
         let _ = print_newline () in
         let choices = List.tl q_and_as in
@@ -157,7 +156,10 @@ let sync_profile id =
             get_answer choices
         in get_answer choices)
       (Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs)
-  in update_profile id (Base.List.sexp_of_t Base.Int.sexp_of_t answers)
+  in
+  let _ = update_profile id (Base.List.sexp_of_t Base.Int.sexp_of_t answers) in
+  let _ = print_string "Thank you!" in
+  print_newline ()
                
 (*
  * Get the user ID from the profile, creating it if it doesn't exist
