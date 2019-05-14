@@ -30,7 +30,6 @@ let session_id = Unix.gettimeofday ()
 
 (*
  * Local server URI for testing
- * TODO add a debug option to switch to this
  * TODO before pushing, set to 44 and don't push start-server.sh
  *)
 let server_uri = Uri.of_string "http://localhost:4444/coq-analytics/"
@@ -92,7 +91,10 @@ let sync_profile_questions id =
   let qs = Sexp.of_string (Lwt_main.run response) in
   Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs
 
-(* TODO explain *)
+(*
+ * If the user must answer more questions,
+ * send those answers to the server to update the user's profile
+ *)
 let update_profile id answers =
   let update_uri = Uri.with_path server_uri "/update-profile/" in
   let params = [("id", [id]); ("answers", [Sexp.to_string answers])] in
@@ -101,13 +103,28 @@ let update_profile id answers =
     let code = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in (* TODO ref. *)
   Lwt_main.run response
-                 
+
 (*
- * Update a user profile
- * TODO!!! Move to Feedback.msg_notice, and clean
- * TODO handle empty case
- * TODO!!! Also consider the input method if you do that
- * TODO!!! server-side code
+ * Get the answer to a profile question from user input
+ *)
+let rec get_answer choices =
+  try
+    let offset = read_int () - 1 in
+    let _ = List.nth choices offset in
+    offset
+  with _ ->
+    let _ = print_string "Invalid input, please try again" in
+    let _ = print_newline () in
+    get_answer choices
+               
+(*
+ * Determine whether a user's profile is up-to-date and, if it is not,
+ * update the user's profile.
+ *
+ * Note that the current setup allows users to spoof other users.
+ * This is OK; we assume users are not malicious.
+ * There are also some possible issues if users sign up at the
+ * same exact time. This is also OK for now.
  *)
 let sync_profile id =
   let qs = sync_profile_questions id in
@@ -143,16 +160,7 @@ let sync_profile id =
               choices
           in
           let _ = print_newline () in
-          let rec get_answer choices = (* TODO refactor *)
-            try
-              let offset = read_int () - 1 in
-              let _ = List.nth choices offset in
-              offset
-            with _ ->
-              let _ = print_string "Invalid input, please try again" in
-              let _ = print_newline () in
-              get_answer choices
-          in get_answer choices)
+          get_answer choices)
         qs
     in
     let _ = update_profile id (Base.List.sexp_of_t Base.Int.sexp_of_t answers) in
