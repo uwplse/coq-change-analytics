@@ -106,6 +106,7 @@ let update_profile id answers =
 
 (*
  * Get the answer to a profile question from user input
+ * Return an integer that marks the offset of the answer to that question
  *)
 let rec get_answer choices =
   try
@@ -116,6 +117,50 @@ let rec get_answer choices =
     let _ = print_string "Invalid input, please try again" in
     let _ = print_newline () in
     get_answer choices
+
+(*
+ * Ask a user questions when their profile is not up to date
+ * Return their answers as sexp
+ *)
+let ask_profile_questions qs =
+  let _ = print_string "Thank you for using Coq Change Analytics!" in
+  let _ = print_newline () in
+  let _ = print_string "We need more information from you before continuing." in
+  let _ = print_newline () in
+  let _ =
+    print_string
+      ("If you have filled this out before, then we have since " ^
+         "updated these questions, and your profile is now out of date.")
+  in
+  let _ = print_newline () in
+  let _ = print_newline () in
+  let answers =
+    List.map
+      (fun q_and_as ->
+        let _ = print_newline () in
+        let _ = print_string (List.hd q_and_as) in
+        let _ = print_newline () in
+        let choices = List.tl q_and_as in
+        let _ =
+          List.iteri
+            (fun i a ->
+              let _ = print_int (i + 1) in
+              let _ = print_string ") " in
+              let _ = print_string a in
+              print_newline ())
+            choices
+        in
+        let _ = print_newline () in
+        get_answer choices)
+      qs
+  in Base.List.sexp_of_t Base.Int.sexp_of_t answers
+                   
+(*
+ * Welcome a user back when their profile is up to date
+ *)
+let welcome_back () =
+  let _ = print_string "Welcome back!" in
+  print_newline ()
                
 (*
  * Determine whether a user's profile is up-to-date and, if it is not,
@@ -125,45 +170,21 @@ let rec get_answer choices =
  * This is OK; we assume users are not malicious.
  * There are also some possible issues if users sign up at the
  * same exact time. This is also OK for now.
+ *
+ * This is all assumed to happen at the command line, when the user first
+ * runs make to include the plugin. We will need to ask them to do this
+ * by command line for now. If this is a problem for alpha users,
+ * we can figure out how to interface with the IDEs as well.
  *)
 let sync_profile id =
   let qs = sync_profile_questions id in
   if List.length qs = 0 then
-    let _ = print_string "Welcome back!" in
-    print_newline ()
+    (* profile is up to date *)
+    welcome_back ()
   else
-    let _ = print_string "Thank you for using Coq Change Analytics!" in
-    let _ = print_newline () in
-    let _ = print_string "We need more information from you before continuing." in
-    let _ = print_newline () in
-    let _ =
-      print_string
-        ("If you have filled this out before, then we have since " ^
-           "updated these questions, and your profile is now out of date.")
-    in
-    let _ = print_newline () in
-    let _ = print_newline () in
-    let answers =
-      List.map
-        (fun q_and_as ->
-          let _ = print_newline () in
-          let _ = print_string (List.hd q_and_as) in
-          let _ = print_newline () in
-          let choices = List.tl q_and_as in
-          let _ =
-            List.iteri
-              (fun i a ->
-                let _ = print_int (i + 1) in
-                let _ = print_string ") " in
-                let _ = print_string a in
-                print_newline ())
-              choices
-          in
-          let _ = print_newline () in
-          get_answer choices)
-        qs
-    in
-    let _ = update_profile id (Base.List.sexp_of_t Base.Int.sexp_of_t answers) in
+    (* profile is out of date *)
+    let answers = ask_profile_questions qs in
+    let _ = update_profile id answers in
     let _ = print_string "Thank you!" in
     print_newline ()
                   
