@@ -101,7 +101,7 @@ let update_profile id answers =
   let response =
     Client.post_form params update_uri >>= fun (resp, body) ->
     let code = resp |> Response.status |> Code.code_of_status in
-    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in (* TODO ref. *)
+    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   Lwt_main.run response
 
 (*
@@ -164,11 +164,11 @@ let sync_profile id =
   let qs = sync_profile_questions id in
   if List.length qs = 0 then
     (* profile is up to date *)
-    print_string "Welcome back!"; print_newline ()
+    (print_string "Welcome back!"; print_newline ())
   else
     (* profile is out of date *)
     let answers = ask_profile_questions qs in
-    update_profile id answers;
+    ignore(update_profile id answers);
     print_string "Thank you!"; print_newline ()
                   
 (*
