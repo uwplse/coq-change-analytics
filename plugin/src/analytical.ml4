@@ -25,14 +25,11 @@ let session_id = Unix.gettimeofday ()
 
 (*
  * URI for the remote server
+ *
+ * To debug, set to localhost with desired port instead, and update
+ * start-server.sh to use the desired port
  *)
-(*let server_uri = Uri.of_string "http://ec2-18-225-35-143.us-east-2.compute.amazonaws.com:44/coq-analytics/"*)
-
-(*
- * Local server URI for testing
- * TODO before pushing, set to 44 and don't push start-server.sh
- *)
-let server_uri = Uri.of_string "http://localhost:4444/coq-analytics/"
+let server_uri = Uri.of_string "http://ec2-18-225-35-143.us-east-2.compute.amazonaws.com:44/coq-analytics/"
                                      
 (*
  * Current logging buffer
