@@ -5,6 +5,7 @@ open Lwt
 open Cohttp
 open Cohttp_lwt_unix
 open Names
+open Sexplib
 
 (* --- Constants --- *)
 
@@ -23,10 +24,13 @@ let session_module = ModPath.to_string (Lib.current_mp ())
 let session_id = Unix.gettimeofday ()
 
 (*
- * URI for the server
+ * URI for the remote server
+ *
+ * To debug, set to localhost with desired port instead, and update
+ * start-server.sh to use the desired port
  *)
 let server_uri = Uri.of_string "http://ec2-18-225-35-143.us-east-2.compute.amazonaws.com:44/coq-analytics/"
-
+                                     
 (*
  * Current logging buffer
  *)
@@ -35,12 +39,7 @@ let buffer = ref []
 (*
  * Name of the user profile file
  *)
-let profile_file = ".analytics_profile"
-
-(*
- * Current profile version
- *)
-let current_version = "1"
+let profile_file = ".analytics_profile"                   
 
 (* --- User Profile --- *)
                      
@@ -59,7 +58,7 @@ let register () =
     let code = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   let id = Lwt_main.run response in
-  let _ = Printf.fprintf output "%s\n" id in
+  Printf.fprintf output "%s\n" id;
   close_out output
 
 (*
@@ -69,7 +68,7 @@ let open_profile () =
   try
     open_in profile_file
   with _ ->
-    let _ = register () in
+    register ();
     try
       open_in profile_file
     with _ ->
@@ -79,34 +78,106 @@ let open_profile () =
  * Prompt the server for information on the user,
  * to determine whether it's necessary to ask the user more questions
  *)
-let get_profile_version id =
-  let profile_uri = Uri.with_path server_uri "/profile-version/" in
+let sync_profile_questions id =
+  let profile_uri = Uri.with_path server_uri "/sync-profile/" in
   let response =
     let params = ("id", id) in
     Client.get (Uri.add_query_param' profile_uri params) >>= fun (resp, body) ->
     let code = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
+  let qs = Sexp.of_string (Lwt_main.run response) in
+  Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs
+
+(*
+ * If the user must answer more questions,
+ * send those answers to the server to update the user's profile
+ *)
+let update_profile id answers =
+  let update_uri = Uri.with_path server_uri "/update-profile/" in
+  let params = [("id", [id]); ("answers", [Sexp.to_string answers])] in
+  let response =
+    Client.post_form params update_uri >>= fun (resp, body) ->
+    let code = resp |> Response.status |> Code.code_of_status in
+    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   Lwt_main.run response
+
+(*
+ * Get the answer to a profile question from user input
+ * Return an integer that marks the offset of the answer to that question
+ *)
+let rec get_answer choices =
+  try
+    let offset = read_int () - 1 in
+    let _ = List.nth choices offset in
+    offset
+  with _ ->
+    print_string "Invalid input, please try again"; print_newline ();
+    get_answer choices
+
+(* 
+ * Ask a user a question for their profile
+ *)
+let ask_question q_and_as =
+  print_newline ();  print_string (List.hd q_and_as); print_newline ();
+  let choices = List.tl q_and_as in
+  List.iteri
+    (fun i a ->
+      let opt = i + 1 in
+      print_int opt; print_string ") "; print_string a; print_newline ())
+    choices;
+  print_newline ();
+  get_answer choices
+  
+(*
+ * Ask a user questions when their profile is not up to date
+ * Return their answers as sexp
+ *)
+let ask_profile_questions qs =
+  print_string "Thank you for using Coq Change Analytics!"; print_newline ();
+  print_string "We need more information before continuing."; print_newline ();
+  print_newline ();
+  print_string
+    ("If you have filled this out before, then we have since " ^
+       "updated these questions, and your profile is now out of date.");
+  print_newline (); print_newline ();
+  let answers = List.map ask_question qs in
+  Base.List.sexp_of_t Base.Int.sexp_of_t answers                  
                
 (*
- * Update a user profile
+ * Determine whether a user's profile is up-to-date and, if it is not,
+ * update the user's profile.
+ *
+ * Note that the current setup allows users to spoof other users.
+ * This is OK; we assume users are not malicious.
+ * There are also some possible issues if users sign up at the
+ * same exact time. This is also OK for now.
+ *
+ * This is all assumed to happen at the command line, when the user first
+ * runs make to include the plugin. We will need to ask them to do this
+ * by command line for now. If this is a problem for alpha users,
+ * we can figure out how to interface with the IDEs as well.
  *)
-let update_profile () =
-  () (* no questions, yet *)
-               
+let sync_profile id =
+  let qs = sync_profile_questions id in
+  if List.length qs = 0 then
+    (* profile is up to date *)
+    (print_string "Welcome back!"; print_newline ())
+  else
+    (* profile is out of date *)
+    let answers = ask_profile_questions qs in
+    ignore(update_profile id answers);
+    print_string "Thank you!"; print_newline ()
+                  
 (*
  * Get the user ID from the profile, creating it if it doesn't exist
+ * Prompt the user for extra information if the server says so
  *)
 let user_id =
   let input = open_profile () in
   let id = input_line input in
-  let _ = close_in input in
-  let version = get_profile_version id in
-  if version = current_version then
-    id
-  else
-    let _ = update_profile () in
-    id
+  close_in input;
+  sync_profile id;
+  id
                    
 (* --- Options --- *)
 
