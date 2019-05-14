@@ -7,13 +7,6 @@ open Cohttp_lwt_unix
 open Names
 open Sexplib
 
-(*
- * TODO use sexplib to form sexps too
- * TODO update server too
- * TODO if easy, just add a -debug option for local testing (server_uri)
- * TODO have a way to have users agree not to spoof other users
- *)
-
 (* --- Constants --- *)
 
 (* 
