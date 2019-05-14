@@ -12,18 +12,14 @@ version_id = "2"
 
 app = Flask(__name__)
 
-# TODO fill this stuff in
-# TODO sync client
-# TODO test
-
-# TODO use user ID to dump
+# Log a command
 @app.route("/coq-analytics/", methods=["POST"])
 def log_command():
     try:
         all_sexps = loads(request.form["msg"])
         with open(logpath, 'a') as logfile:
             for sexp in all_sexps:
-                dump([[Symbol("user"), str(request.remote_addr)]] + sexp, logfile)
+                dump([[Symbol("user"), str(request.form["id"])]] + sexp, logfile)
                 logfile.write("\n")
     except:
         print("Got bad plugin message: {}".format(request.form["msg"]))
@@ -31,6 +27,7 @@ def log_command():
         return "Failed"
     return 'Submitted'
 
+# Register a new user
 @app.route("/register/", methods=["POST"])
 def register():
     try:
