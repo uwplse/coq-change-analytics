@@ -19,7 +19,7 @@ def log_command():
         all_sexps = loads(request.form["msg"])
         with open(logpath, 'a') as logfile:
             for sexp in all_sexps:
-                dump([[Symbol("user"), str(request.form["id"])]] + sexp, logfile)
+                dump(sexp, logfile)
                 logfile.write("\n")
     except:
         print("Got bad plugin message: {}".format(request.form["msg"]))
