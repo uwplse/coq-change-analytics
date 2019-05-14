@@ -61,7 +61,7 @@ let register () =
     let code = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   let id = Lwt_main.run response in
-  let _ = Printf.fprintf output "%s\n" id in
+  Printf.fprintf output "%s\n" id;
   close_out output
 
 (*
@@ -71,7 +71,7 @@ let open_profile () =
   try
     open_in profile_file
   with _ ->
-    let _ = register () in
+    register ();
     try
       open_in profile_file
     with _ ->
@@ -114,53 +114,37 @@ let rec get_answer choices =
     let _ = List.nth choices offset in
     offset
   with _ ->
-    let _ = print_string "Invalid input, please try again" in
-    let _ = print_newline () in
+    print_string "Invalid input, please try again"; print_newline ();
     get_answer choices
 
+(* 
+ * Ask a user a question for their profile
+ *)
+let ask_question q_and_as =
+  print_newline ();  print_string (List.hd q_and_as); print_newline ();
+  let choices = List.tl q_and_as in
+  List.iteri
+    (fun i a ->
+      let opt = i + 1 in
+      print_int opt; print_string ") "; print_string a; print_newline ())
+    choices;
+  print_newline ();
+  get_answer choices
+  
 (*
  * Ask a user questions when their profile is not up to date
  * Return their answers as sexp
  *)
 let ask_profile_questions qs =
-  let _ = print_string "Thank you for using Coq Change Analytics!" in
-  let _ = print_newline () in
-  let _ = print_string "We need more information from you before continuing." in
-  let _ = print_newline () in
-  let _ =
-    print_string
-      ("If you have filled this out before, then we have since " ^
-         "updated these questions, and your profile is now out of date.")
-  in
-  let _ = print_newline () in
-  let _ = print_newline () in
-  let answers =
-    List.map
-      (fun q_and_as ->
-        let _ = print_newline () in
-        let _ = print_string (List.hd q_and_as) in
-        let _ = print_newline () in
-        let choices = List.tl q_and_as in
-        let _ =
-          List.iteri
-            (fun i a ->
-              let _ = print_int (i + 1) in
-              let _ = print_string ") " in
-              let _ = print_string a in
-              print_newline ())
-            choices
-        in
-        let _ = print_newline () in
-        get_answer choices)
-      qs
-  in Base.List.sexp_of_t Base.Int.sexp_of_t answers
-                   
-(*
- * Welcome a user back when their profile is up to date
- *)
-let welcome_back () =
-  let _ = print_string "Welcome back!" in
-  print_newline ()
+  print_string "Thank you for using Coq Change Analytics!"; print_newline ();
+  print_string "We need more information before continuing."; print_newline ();
+  print_newline ();
+  print_string
+    ("If you have filled this out before, then we have since " ^
+       "updated these questions, and your profile is now out of date.");
+  print_newline (); print_newline ();
+  let answers = List.map ask_question qs in
+  Base.List.sexp_of_t Base.Int.sexp_of_t answers                  
                
 (*
  * Determine whether a user's profile is up-to-date and, if it is not,
@@ -180,13 +164,12 @@ let sync_profile id =
   let qs = sync_profile_questions id in
   if List.length qs = 0 then
     (* profile is up to date *)
-    welcome_back ()
+    print_string "Welcome back!"; print_newline ()
   else
     (* profile is out of date *)
     let answers = ask_profile_questions qs in
-    let _ = update_profile id answers in
-    let _ = print_string "Thank you!" in
-    print_newline ()
+    update_profile id answers;
+    print_string "Thank you!"; print_newline ()
                   
 (*
  * Get the user ID from the profile, creating it if it doesn't exist
@@ -195,8 +178,8 @@ let sync_profile id =
 let user_id =
   let input = open_profile () in
   let id = input_line input in
-  let _ = close_in input in
-  let _ = sync_profile id in
+  close_in input;
+  sync_profile id;
   id
                    
 (* --- Options --- *)
