@@ -45,6 +45,7 @@ def register():
         users.close()
         return str(new_uid)
 
+# Determine if a profile is up-to-date and, if not, ask the latest profile questions
 @app.route("/sync-profile/", methods=["GET"])
 def sync_profile():
     uid = int(request.args.get('id'))
@@ -59,9 +60,7 @@ def sync_profile():
         questions = dumps(load(question_store))
         return questions
 
-# TODO explain
-# TODO obviously some consistency bugs are possible, but eh. obviously not the best way, but it's a way
-# TODO refactor common code
+# Update a profile with answers to the profile questions
 @app.route("/update-profile/", methods=["POST"])
 def update_profile():
     uid = request.form["id"]
@@ -73,5 +72,6 @@ def update_profile():
     new_profile = [[Symbol("user"), uid]] + [[Symbol("version"), version_id]] + [[Symbol("answers"), answers]]
     profiles[int(uid)] = new_profile
     dump(profiles, users) 
+    users.close()
     return "Updated"
 
