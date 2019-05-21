@@ -18,20 +18,13 @@ Install `sexplib` and `cohttp`:
 opam install sexplib cohttp cohttp-lwt-unix
 ```
 
-Once you have done that, you should be able to `make` the plugin.
-For now, you need to generate a Makefile:
+Once you have done that, you need to generate a Makefile:
 
 ```
 coq_makefile -f _CoqProject -o Makefile
 ```
 
-and then add a line to your Makefile.conf:
-
-```
-CAMLPKGS = -package cohttp -package cohttp-lwt-unix -package lwt
-```
-
-But before we release this, hopefully we'll figure out how to make this easier.
+Then, you should be able to `make` the plugin.
 
 # Using Analytics
 
