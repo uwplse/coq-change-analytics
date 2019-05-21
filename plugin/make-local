@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-PATH=coq/bin:$PATH make
+PATH=coq/bin:$PATH make $@
