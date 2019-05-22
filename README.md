@@ -31,7 +31,13 @@ and then run the build script to build the local clone of Coq:
 ./build.sh
 ```
 
-After, and from then on, you can simply run `make`.
+After, and from then on, you can simply run:
+
+```
+`./make-local`.
+```
+
+This process will change to become simpler for later releases.
 
 # Using Analytics
 
