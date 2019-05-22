@@ -1,7 +1,1 @@
-{
-
-open Analytical
-
-}
-
 DECLARE PLUGIN "analytical"

@@ -52,8 +52,8 @@ let register () =
   let register_uri = Uri.with_path server_uri "/register/" in
   let output = open_out profile_file in
   let response =
-    Client.post_form [] register_uri >>= fun (resp, body) ->
-    let code = resp |> Response.status |> Code.code_of_status in
+    Client.post_form ~params:[] register_uri >>= fun (resp, body) ->
+    let _ = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   let id = Lwt_main.run response in
   Printf.fprintf output "%s\n" id;
@@ -81,7 +81,7 @@ let sync_profile_questions id =
   let response =
     let params = ("id", id) in
     Client.get (Uri.add_query_param' profile_uri params) >>= fun (resp, body) ->
-    let code = resp |> Response.status |> Code.code_of_status in
+    let _ = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   let qs = Sexp.of_string (Lwt_main.run response) in
   Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs
@@ -94,8 +94,8 @@ let update_profile id answers =
   let update_uri = Uri.with_path server_uri "/update-profile/" in
   let params = [("id", [id]); ("answers", [Sexp.to_string answers])] in
   let response =
-    Client.post_form params update_uri >>= fun (resp, body) ->
-    let code = resp |> Response.status |> Code.code_of_status in
+    Client.post_form ~params:params update_uri >>= fun (resp, body) ->
+    let _ = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   Lwt_main.run response
 
@@ -236,8 +236,8 @@ let add_to_buffer (output : Pp.t) : unit =
 let log () : unit =
   let msg = buffer_to_string () in
   let response =
-    Client.post_form [("msg", [msg])] server_uri >>= fun (resp, body) ->
-    let code = resp |> Response.status |> Code.code_of_status in
+    Client.post_form ~params:[("msg", [msg])] server_uri >>= fun (resp, body) ->
+    let _ = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   ignore (Lwt_main.run response)
            
@@ -264,8 +264,7 @@ let print_state_add (v : Vernacexpr.vernac_control) (state : Stateid.t) : unit =
   print_analytics
     (Pp.str
        (Printf.sprintf
-          "((time %f) (id %s) (user %s) (session-module %s) (session %f)
-           (Control (StmAdd () \"%s\")))"
+          "((time %f) (id %s) (user %s) (session-module %s) (session %f) (Control (StmAdd () \"%s\")))"
           (Unix.gettimeofday ())
           (Stateid.to_string state)
           user_id
@@ -278,8 +277,7 @@ let print_state_edit (state : Stateid.t) : unit =
   print_analytics
     (Pp.str
        (Printf.sprintf
-          "((time %f) (user %s) (session-module %s) (session %f)
-           (Control (StmCancel (%s))))"
+          "((time %f) (user %s) (session-module %s) (session %f) (Control (StmCancel (%s))))"
           (Unix.gettimeofday ())
           user_id
           session_module
@@ -291,8 +289,7 @@ let print_state_exec (state : Stateid.t) : unit =
   print_analytics
     (Pp.str
        (Printf.sprintf
-          "((time %f) (user %s) (session-module %s) (session %f)
-           (Control (StmObserve %s)))"
+          "((time %f) (user %s) (session-module %s) (session %f) (Control (StmObserve %s)))"
           (Unix.gettimeofday ())
           user_id
           session_module
@@ -304,9 +301,9 @@ let print_state_exec (state : Stateid.t) : unit =
  * Setting the hooks
  *)
 let hooks : Stm.document_edit_notifiers =
-  { add_hook = print_state_add ;
-    edit_hook = print_state_edit ;
-    exec_hook = print_state_exec ;
+  { Stm.add_hook = print_state_add ;
+    Stm.edit_hook = print_state_edit ;
+    Stm.exec_hook = print_state_exec ;
   }
 
 let _ = Hook.set Stm.document_edit_hook hooks
