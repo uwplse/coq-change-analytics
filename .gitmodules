@@ -1,3 +1,3 @@
 [submodule "plugin/coq"]
 	path = plugin/coq
-	url = git@github.com:HazardousPeach/coq.git
+	url = https://github.com/HazardousPeach/coq.git
