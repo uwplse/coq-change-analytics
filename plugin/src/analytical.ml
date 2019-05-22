@@ -260,7 +260,7 @@ let print_analytics (output : Pp.t) (is_exec : bool) : unit =
 (*
  * Hooks into the document state
  *)
-let print_state_add (v : Vernacexpr.vernac_control CAst.t) (state : Stateid.t) : unit =
+let print_state_add (v : Vernacexpr.vernac_control) (state : Stateid.t) : unit =
   print_analytics
     (Pp.str
        (Printf.sprintf
@@ -271,7 +271,7 @@ let print_state_add (v : Vernacexpr.vernac_control CAst.t) (state : Stateid.t) :
           user_id
           session_module
           session_id
-          (Pp.string_of_ppcmds (Ppvernac.pr_vernac v.v))))
+          (Pp.string_of_ppcmds (Ppvernac.pr_vernac v))))
     false
 
 let print_state_edit (state : Stateid.t) : unit =
