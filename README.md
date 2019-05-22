@@ -18,13 +18,20 @@ Install `sexplib` and `cohttp`:
 opam install sexplib cohttp cohttp-lwt-unix
 ```
 
-Once you have done that, you need to generate a Makefile:
+The first time, for now, you need to use the local clone of Coq, which is in a submodule:
 
 ```
-coq_makefile -f _CoqProject -o Makefile
+git submodule init
+git submodule update
 ```
 
-Then, you should be able to `make` the plugin.
+and then run the build script to build the local clone of Coq:
+
+```
+./build.sh
+```
+
+After, and from then on, you can simply run `make`.
 
 # Using Analytics
 
