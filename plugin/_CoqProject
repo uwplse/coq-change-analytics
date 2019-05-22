@@ -3,6 +3,7 @@ CAMLPKGS = "-package cohttp -package cohttp-lwt-unix -package lwt"
 -I src
 -R theories Analytical
 
+src/analytical.mlg
 src/analytical.ml4
 src/analytics.mlpack
 
