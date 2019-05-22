@@ -300,10 +300,6 @@ let print_state_exec (state : Stateid.t) : unit =
 (*
  * Setting the hooks
  *)
-let hooks : Stm.document_edit_notifiers =
-  { Stm.add_hook = print_state_add ;
-    Stm.edit_hook = print_state_edit ;
-    Stm.exec_hook = print_state_exec ;
-  }
-
-let _ = Hook.set Stm.document_edit_hook hooks
+let _ = Hook.set Stm.document_add_hook print_state_add
+let _ = Hook.set Stm.document_edit_hook print_state_edit
+let _ = Hook.set Stm.sentence_exec_hook print_state_exec
