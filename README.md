@@ -12,32 +12,21 @@ into how that development process currently works. This plugin will provide thos
 
 # Building Analytics
 
-Install `sexplib` and `cohttp`:
-
-```
-opam install sexplib cohttp cohttp-lwt-unix
-```
-
-The first time, for now, you need to use the local clone of Coq, which is in a submodule:
-
-```
-git submodule init
-git submodule update
-```
-
-and then run the build script to build the local clone of Coq:
+To build the plugin initially, run:
 
 ```
 ./build.sh
+./make
 ```
 
-After, and from then on, you can simply run:
+This will walk you through the entire process, including pulling the appropriate dependencies and
+making sure you have a version of Coq that is compatible with the plugin.
+
+In the future, if you would like to skip rebuilding Coq, and would like to rebuild only the plugin, just run:
 
 ```
-`./make-local`.
+./make
 ```
-
-This process will change to become simpler for later releases.
 
 # Using Analytics
 
