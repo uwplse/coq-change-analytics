@@ -1,5 +1,5 @@
 [submodule "plugin/coq"]
 	path = plugin/coq
-	url = https://github.com/HazardousPeach/coq.git
-        branch = hooks_patch
+	url = https://github.com/coq/coq.git
+        branch = master
 
