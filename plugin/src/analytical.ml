@@ -121,7 +121,7 @@ let get_answer choices =
        "type another invalid input to exit the build process. Then, rebuild " ^
        "the plugin via command line to update your answers to the " ^
        "registration questions. You may then resume normal development.");
-    print_newline ();
+    print_newline (); print_newline ();
     try
       read_answer ()
     with _ ->
