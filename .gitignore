@@ -24,4 +24,4 @@ plugin/vfiles/testdebug.v
 plugin/vfiles/testserver.v
 plugin/.profile
 plugin/.analytics_profile
-
+plugin/make
