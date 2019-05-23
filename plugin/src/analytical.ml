@@ -37,7 +37,8 @@ let buffer = ref []
 (*
  * Name of the user profile file
  *)
-let profile_file = ".analytics_profile"                   
+let profile_file =
+  Printf.sprintf "%s/%s" (Sys.getenv "HOME") ".analytics_profile"
 
 (* --- User Profile --- *)
                      
