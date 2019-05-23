@@ -99,19 +99,34 @@ let update_profile id answers =
     let _ = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   Lwt_main.run response
-
+               
 (*
  * Get the answer to a profile question from user input
  * Return an integer that marks the offset of the answer to that question
  *)
-let rec get_answer choices =
-  try
+let get_answer choices =
+  let read_answer () =
     let offset = read_int () - 1 in
     let _ = List.nth choices offset in
     offset
+  in
+  try
+    read_answer ()
   with _ ->
-    print_string "Invalid input, please try again"; print_newline ();
-    get_answer choices
+    print_string "Invalid input, please try again.";
+    print_newline (); print_newline ();
+    print_string
+      ("Note: The question answering process is not supported outside of the " ^
+       "command line. If you are seeing this message within an IDE, please " ^
+       "type another invalid input to exit the build process. Then, rebuild " ^
+       "the plugin via command line to update your answers to the " ^
+       "registration questions. You may then resume normal development.");
+    print_newline ();
+    try
+      read_answer ()
+    with _ ->
+      print_string "Exiting Coq Change Analytics.";
+      failwith "User exited"   
 
 (* 
  * Ask a user a question for their profile
