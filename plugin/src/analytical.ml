@@ -280,7 +280,7 @@ let print_state_add (v : Vernacexpr.vernac_control) (state : Stateid.t) : unit =
   let exp = Sexp.(List [
                       List [
                           Atom "time";
-                          Atom (Unix.gettimeofday)];
+                          Atom (Float.to_string (Unix.gettimeofday ()))];
                       List [
                           Atom "id";
                           Atom (Stateid.to_string state)];
@@ -292,25 +292,14 @@ let print_state_add (v : Vernacexpr.vernac_control) (state : Stateid.t) : unit =
                           Atom session_module];
                       List [
                           Atom "session";
-                          Atom session_id];
+                          Atom (Float.to_string session_id)];
                       List [
                           Atom "Control";
                           List [
                               Atom "StmAdd";
                               List [];
                               Atom (Pp.string_of_ppcmds (Ppvernac.pr_vernac v))]]])
-  in print_analytics (Sexp.to_string exp) false
-  (* print_analytics
-   *   (Pp.str
-   *      (Printf.sprintf
-   *         "((time %f) (id %s) (user %s) (session-module %s) (session %f) (Control (StmAdd () \"%s\")))"
-   *         (Unix.gettimeofday ())
-   *         (Stateid.to_string state)
-   *         user_id
-   *         session_module
-   *         session_id
-   *         (Pp.string_of_ppcmds (Ppvernac.pr_vernac v))))
-   *   false *)
+  in print_analytics (Pp.str (Sexp.to_string exp)) false
 
 let print_state_edit (state : Stateid.t) : unit =
   print_analytics
