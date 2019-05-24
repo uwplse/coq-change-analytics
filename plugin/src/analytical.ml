@@ -9,10 +9,6 @@ open Sexplib
 
 (* 
  * Module path for the current session
- *
- * This appears to work with coqc, but not with coqtop, so for now
- * the results will only sometimes be useful.
- * See: https://github.com/coq/coq/issues/8989
  *)
 let session_module = ModPath.to_string (Lib.current_mp ())
 
