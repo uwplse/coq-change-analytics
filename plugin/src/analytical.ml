@@ -273,41 +273,72 @@ let print_analytics (output : Pp.t) (is_exec : bool) : unit =
  * Hooks into the document state
  *)
 let print_state_add (v : Vernacexpr.vernac_control) (state : Stateid.t) : unit =
-  print_analytics
-    (Pp.str
-       (Printf.sprintf
-          "((time %f) (id %s) (user %s) (session-module %s) (session %f) (Control (StmAdd () \"%s\")))"
-          (Unix.gettimeofday ())
-          (Stateid.to_string state)
-          user_id
-          session_module
-          session_id
-          (Pp.string_of_ppcmds (Ppvernac.pr_vernac v))))
-    false
+  let exp = Sexp.(List [
+                      List [
+                          Atom "time";
+                          Atom (Float.to_string (Unix.gettimeofday ()))];
+                      List [
+                          Atom "id";
+                          Atom (Stateid.to_string state)];
+                      List [
+                          Atom "user";
+                          Atom user_id];
+                      List [
+                          Atom "session-module";
+                          Atom session_module];
+                      List [
+                          Atom "session";
+                          Atom (Float.to_string session_id)];
+                      List [
+                          Atom "Control";
+                          List [
+                              Atom "StmAdd";
+                              List [];
+                              Atom (Pp.string_of_ppcmds (Ppvernac.pr_vernac v))]]])
+  in print_analytics (Pp.str (Sexp.to_string exp)) false
 
 let print_state_edit (state : Stateid.t) : unit =
-  print_analytics
-    (Pp.str
-       (Printf.sprintf
-          "((time %f) (user %s) (session-module %s) (session %f) (Control (StmCancel (%s))))"
-          (Unix.gettimeofday ())
-          user_id
-          session_module
-          session_id
-          (Stateid.to_string state)))
-    false
+  let exp = Sexp.(List [
+                      List [
+                          Atom "time";
+                          Atom (Float.to_string (Unix.gettimeofday ()))];
+                      List [
+                          Atom "user";
+                          Atom user_id];
+                      List [
+                          Atom "session-module";
+                          Atom session_module];
+                      List [
+                          Atom "session";
+                          Atom (Float.to_string session_id)];
+                      List [
+                          Atom "Control";
+                          List [
+                              Atom "StmCancel";
+                              List [
+                                  Atom (Stateid.to_string state)]]]])
+  in print_analytics (Pp.str (Sexp.to_string exp)) false
 
 let print_state_exec (state : Stateid.t) : unit =
-  print_analytics
-    (Pp.str
-       (Printf.sprintf
-          "((time %f) (user %s) (session-module %s) (session %f) (Control (StmObserve %s)))"
-          (Unix.gettimeofday ())
-          user_id
-          session_module
-          session_id
-          (Stateid.to_string state)))
-    true
+  let exp = Sexp.(List [
+                      List [
+                          Atom "time";
+                          Atom (Float.to_string (Unix.gettimeofday ()))];
+                      List [
+                          Atom "user";
+                          Atom user_id];
+                      List [
+                          Atom "session-module";
+                          Atom session_module];
+                      List [
+                          Atom "session";
+                          Atom (Float.to_string session_id)];
+                      List [
+                          Atom "Control";
+                          List [
+                              Atom "StmObserve";
+                              Atom (Stateid.to_string state)]]])
+  in print_analytics (Pp.str (Sexp.to_string exp)) true
 
 (*
  * Setting the hooks
