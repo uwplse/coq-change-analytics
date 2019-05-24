@@ -41,7 +41,7 @@ else
 
     if read_in; then
       echo "OK, installing Coq locally. Hang tight."
-      (cd coq && ./configure -local && make -j 5)
+      (cd coq && make clean && ./configure -local && make -j 5)
       echo "All set. Now, let's generate a Makefile."
       ./coq/bin/coq_makefile -f _CoqProject -o Makefile
       cp ./make-local ./make
@@ -49,7 +49,7 @@ else
       echo "Note that you will need to use this local copy of Coq to build any projects that use this plugin."
     else
       echo "OK, installing Coq. Hang tight."
-      (cd coq && make -j 5)
+      (cd coq && make clean && make -j 5)
       echo "All set. Now, let's generate a Makefile."
       coq_makefile -f _CoqProject -o Makefile
       cp ./make-user ./make
