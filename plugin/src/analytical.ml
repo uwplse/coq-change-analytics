@@ -319,8 +319,8 @@ let print_state_edit (state : Stateid.t) : unit =
                           Atom "Control";
                           List [
                               Atom "StmCancel";
-                              List [];
-                              Atom (Stateid.to_string state)]]])
+                              List [
+                                  Atom (Stateid.to_string state)]]]])
   in print_analytics (Pp.str (Sexp.to_string exp)) false
 
 let print_state_exec (state : Stateid.t) : unit =
@@ -341,7 +341,6 @@ let print_state_exec (state : Stateid.t) : unit =
                           Atom "Control";
                           List [
                               Atom "StmObserve";
-                              List [];
                               Atom (Stateid.to_string state)]]])
   in print_analytics (Pp.str (Sexp.to_string exp)) true
 
