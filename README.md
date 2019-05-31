@@ -43,6 +43,18 @@ Require Import Analytical.Analytics.
 to the beginning of your [coqrc](https://coq.inria.fr/refman/practical-tools/coq-commands.html#by-resource-file) resource file 
 (creating one if it does not exist), then go on with your proof development as you normally would.
 
+# Reanswering Profile Questions
+
+When you first install the plugin, it will ask you a number of questions about your Coq usage. If at any point
+you would like to reset your answers to these questions, run:
+
+```
+./reset-profile.sh
+./make
+```
+
+You will then be prompted to reanswer the questions.
+
 # Debugging Analytics
 
 To print analytics data locally instead of sending it to a server,
