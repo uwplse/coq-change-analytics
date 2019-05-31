@@ -35,8 +35,8 @@ Simply add this line:
 ```
 Require Import Analytical.Analytics.
 ```
-to your [coqrc](https://coq.inria.fr/refman/practical-tools/coq-commands.html#by-resource-file) resource file,
-then go on with your proof development as you normally would.
+to the beginning of your [coqrc](https://coq.inria.fr/refman/practical-tools/coq-commands.html#by-resource-file) resource file 
+(creating one if it does not exist), then go on with your proof development as you normally would.
 
 # Debugging Analytics
 
