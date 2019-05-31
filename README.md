@@ -30,13 +30,13 @@ In the future, if you would like to skip rebuilding Coq, and would like to rebui
 
 # Using Analytics
 
-Just import the plugin:
+Simply add this line:
 
 ```
 Require Import Analytical.Analytics.
 ```
-
-Then go on with your proof development as you normally would.
+to your [coqrc](https://coq.inria.fr/refman/practical-tools/coq-commands.html#by-resource-file) resource file,
+then go on with your proof development as you normally would.
 
 # Debugging Analytics
 
