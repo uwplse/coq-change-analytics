@@ -60,6 +60,20 @@ def sync_profile():
         questions = dumps(load(question_store))
         return questions
 
+# Reset a profile
+@app.route("/reset-profile/", methods=["POST"])
+def reset_profile():
+    uid = request.form["id"]
+    users = open(userpath, 'r')
+    profiles = load(users)
+    users.close()
+    users = open(userpath, 'w')
+    new_profile = [[Symbol("user"), uid]] + [[Symbol("version"), "0"]]
+    profiles[int(uid)] = new_profile
+    dump(profiles, users) 
+    users.close()
+    return "Succesfully reset\n"
+
 # Update a profile with answers to the profile questions
 @app.route("/update-profile/", methods=["POST"])
 def update_profile():
