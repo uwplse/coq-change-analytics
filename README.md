@@ -10,6 +10,11 @@ broken proofs. As a result, data from Github reveals little about the proof deve
 Tools that aim to improve the development process for proof engineers ought to have insight
 into how that development process currently works. This plugin will provide those tools with that information.
 
+# Dependencies
+
+You will need [Opam](https://opam.ocaml.org/) with OCaml 4.07.0. The build script will take
+care of the remaining dependencies.
+
 # Building Analytics
 
 To build the plugin initially, run:
