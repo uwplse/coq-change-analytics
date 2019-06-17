@@ -40,7 +40,7 @@ def register():
         new_uid = "0"
     finally:
         with open(userpath, 'w') as f:
-            f.write(dump(profiles + [[[Symbol("user"), new_uid]] + [[Symbol("version"), "0"]]]) + "\n")
+            f.write(dumps(profiles + [[[Symbol("user"), new_uid]] + [[Symbol("version"), "0"]]]) + "\n")
         return str(new_uid)
 
 # Determine if a profile is up-to-date and, if not, ask the latest profile questions
@@ -69,7 +69,7 @@ def reset_profile():
     with open(userpath, 'w') as f:
         new_profile = [[Symbol("user"), uid]] + [[Symbol("version"), "0"]]
         profiles[int(uid)] = new_profile
-        f.write(dump(profiles))
+        f.write(dumps(profiles))
     return "Succesfully reset\n"
 
 # Update a profile with answers to the profile questions
