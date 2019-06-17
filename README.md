@@ -12,7 +12,7 @@ into how that development process currently works. This plugin will provide thos
 
 # Dependencies
 
-You will need [Opam](https://opam.ocaml.org/) with OCaml 4.07.0. The build script will take
+You will need [Opam](https://opam.ocaml.org/). The build script will take
 care of the remaining dependencies.
 
 # Building Analytics
