@@ -27,6 +27,9 @@ To build the plugin initially, run:
 This will walk you through the entire process, including pulling the appropriate dependencies and
 making sure you have a version of Coq that is compatible with the plugin.
 
+This build script will ask you if you would like to install Coq locally. If you choose to install Coq locally,
+please make sure that you also use this verison of Coq for your normal development. 
+
 In the future, if you would like to skip rebuilding Coq, and would like to rebuild only the plugin, just run:
 
 ```
