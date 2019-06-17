@@ -280,7 +280,7 @@ let print_state_add (v : Vernacexpr.vernac_control) (state : Stateid.t) : unit =
   let exp = Sexp.(List [
                       List [
                           Atom "time";
-                          Atom (Float.to_string (Unix.gettimeofday ()))];
+                          Atom (Pervasives.string_of_float (Unix.gettimeofday ()))];
                       List [
                           Atom "id";
                           Atom (Stateid.to_string state)];
@@ -292,7 +292,7 @@ let print_state_add (v : Vernacexpr.vernac_control) (state : Stateid.t) : unit =
                           Atom session_module];
                       List [
                           Atom "session";
-                          Atom (Float.to_string session_id)];
+                          Atom (Pervasives.string_of_float session_id)];
                       List [
                           Atom "Control";
                           List [
@@ -305,7 +305,7 @@ let print_state_edit (state : Stateid.t) : unit =
   let exp = Sexp.(List [
                       List [
                           Atom "time";
-                          Atom (Float.to_string (Unix.gettimeofday ()))];
+                          Atom (Pervasives.string_of_float (Unix.gettimeofday ()))];
                       List [
                           Atom "user";
                           Atom user_id];
@@ -314,7 +314,7 @@ let print_state_edit (state : Stateid.t) : unit =
                           Atom session_module];
                       List [
                           Atom "session";
-                          Atom (Float.to_string session_id)];
+                          Atom (Pervasives.string_of_float session_id)];
                       List [
                           Atom "Control";
                           List [
@@ -327,7 +327,7 @@ let print_state_exec (state : Stateid.t) : unit =
   let exp = Sexp.(List [
                       List [
                           Atom "time";
-                          Atom (Float.to_string (Unix.gettimeofday ()))];
+                          Atom (Pervasives.string_of_float (Unix.gettimeofday ()))];
                       List [
                           Atom "user";
                           Atom user_id];
@@ -336,7 +336,7 @@ let print_state_exec (state : Stateid.t) : unit =
                           Atom session_module];
                       List [
                           Atom "session";
-                          Atom (Float.to_string session_id)];
+                          Atom (Pervasives.string_of_float session_id)];
                       List [
                           Atom "Control";
                           List [
