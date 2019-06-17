@@ -63,3 +63,8 @@ set the Debug Analytics option:
 ```
 Set Debug Analytics.
 ```
+
+# Reporting Bugs
+
+Please report any bugs that you find to Github. If you need to temporarily disable the plugin due to a severe bug,
+you can comment out the line in your coqrc; if you do so, please let us know so we prioritize fixing the bug.
