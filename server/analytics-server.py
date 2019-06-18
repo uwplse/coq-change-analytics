@@ -84,6 +84,6 @@ def update_profile():
     with open(userpath, 'w') as f:
         new_profile = [[Symbol("user"), uid]] + [[Symbol("version"), version_id]] + [[Symbol("answers"), answers]]
         profiles[int(uid)] = new_profile
-        f.write(users)
+        f.write(dumps(profiles))
     return "Updated"
 
