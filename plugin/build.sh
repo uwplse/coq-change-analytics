@@ -36,6 +36,7 @@ else
     git submodule init
     git submodule sync
     git submodule update --init --recursive --remote
+    (cd coq && git pull origin master && cd ..)
 
     echo "Would you prefer to install this version of Coq locally, so that you can keep other versions of Coq around on your computer more easily? [y/n]"
 
