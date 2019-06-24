@@ -35,6 +35,17 @@ let server_uri = Uri.of_string "http://ec2-18-225-35-143.us-east-2.compute.amazo
 let buffer = ref []
 
 (*
+ * The last time the logs were sent to the server (seconds accuracy)
+ *)
+let last_sent = ref (Unix.time ())
+
+(*
+ * The minimum frequency with which to send the logs to the server, in seconds
+ * The exception is that when a module closes, we always send
+ *)
+let send_frequency = 5
+
+(*
  * Name of the user profile file
  *)
 let profile_file =
@@ -256,7 +267,20 @@ let log () : unit =
     let _ = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
   ignore (Lwt_main.run response)
-           
+
+(*
+ * Log the buffer remotely or locally
+ *)
+let log_buffer () : unit =
+  let _ =
+    if is_debug () then
+      Feedback.msg_notice (buffer_to_pp ())
+    else
+      log ()
+  in flush_buffer ()
+
+let _ = Declaremods.append_end_library_hook log_buffer
+
 (*
  * Output analytics, using opt_debug_analytics to determine
  * whether to do so locally or send output to a server
@@ -264,12 +288,14 @@ let log () : unit =
 let print_analytics (output : Pp.t) (is_exec : bool) : unit =
   let _ = add_to_buffer output in
   if is_exec then
-    let _ =
-      if is_debug () then
-        Feedback.msg_notice (buffer_to_pp ())
-      else
-        log ()
-    in flush_buffer ()
+    let now = Unix.time () in
+    let last = ! last_sent in
+    let elapsed = Pervasives.int_of_float (now -. last) in
+    if elapsed >= send_frequency then
+      let _ = last_sent := (Unix.time ()) in
+      log_buffer ()
+    else
+      ()
   else
     ()
 
