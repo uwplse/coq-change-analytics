@@ -279,7 +279,7 @@ let log_buffer () : unit =
       log ()
   in flush_buffer ()
 
-let _ = Declaremods.append_end_library_hook log_buffer
+let _ = Pervasives.at_exit log_buffer
 
 (*
  * Output analytics, using opt_debug_analytics to determine
