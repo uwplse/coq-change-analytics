@@ -51,7 +51,7 @@ def multipartition(items, f):
 def try_loads(sexp):
     try:
         entry = loads(sexp)
-        assert get_user(entry)
+        assert get_user(entry) != None
         assert get_time(entry)
         assert get_session(entry)
         return entry
