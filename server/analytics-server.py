@@ -4,8 +4,12 @@ from sexpdata import load, loads, dump, dumps, Symbol
 from flask import Flask, request
 import random
 from datetime import datetime
+from common import *
+import os
+import os.path
 
 logpath = "log.txt"
+logdir = "logs"
 userpath = "users.txt"
 questionpath = "questions.txt"
 version_id = "2"
@@ -17,15 +21,21 @@ app = Flask(__name__)
 def log_command():
     try:
         all_sexps = loads(request.form["msg"])
-        with open(logpath, 'a') as logfile:
-            for sexp in all_sexps:
-                dump(sexp, logfile)
-                logfile.write("\n")
+        for sexp in all_sexps:
+            save_message(sexp)
     except:
         print("Got bad plugin message: {}".format(request.form["msg"]))
         print("Ignoring...")
         return "Failed"
     return 'Submitted'
+
+def save_message(sexp):
+    user = get_user(sexp)
+    if not os.path.exists(logdir):
+        os.makedirs(logdir)
+    with open(os.path.join(logdir, user), 'a') as logfile:
+        dump(sexp, logfile)
+        logfile.write("\n")
 
 # Register a new user
 @app.route("/register/", methods=["POST"])
@@ -86,4 +96,3 @@ def update_profile():
         profiles[int(uid)] = new_profile
         f.write(dumps(profiles))
     return "Updated"
-
