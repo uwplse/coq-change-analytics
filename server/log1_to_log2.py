@@ -8,14 +8,8 @@ import argparse
 import os
 import os.path
 
-def assoc(key, sexp):
-    if not isinstance(sexp, list):
-        return None
-    for entry in sexp:
-        if isinstance(entry, list) and entry[0] == Symbol(key):
-            return entry[1]
-    return None
-get_user = functools.partial(assoc, "user")
+from common import *
+
 def try_loads(sexp):
     try:
         entry = loads(sexp)
