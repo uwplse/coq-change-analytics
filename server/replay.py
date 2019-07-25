@@ -97,10 +97,10 @@ def main():
     more = More(num_lines=30)
     if args.by == "session":
         lines = [f"{idx}: User {user}, Start time: {datetime.fromtimestamp(float(timestamp))}"
-                   for idx, (user, timestamp) in enumerate(session_list)]
+                   for idx, (user, timestamp) in enumerate(sorted(session_list))]
     else:
         lines = [f"{idx}: Start time: {datetime.fromtimestamp(float(timestamp))}"
-                   for idx, (user, timestamp) in enumerate(session_list)]
+                   for idx, (user, timestamp) in enumerate(sorted(session_list))]
     if args.paginate:
         print("\n".join(lines))
     else:
