@@ -33,7 +33,7 @@ def save_message(sexp):
     user = get_user(sexp)
     if not os.path.exists(logdir):
         os.makedirs(logdir)
-    with open(os.path.join(logdir, user), 'a') as logfile:
+    with open(os.path.join(logdir, str(user)), 'a') as logfile:
         dump(sexp, logfile)
         logfile.write("\n")
 
