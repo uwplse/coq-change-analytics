@@ -10,9 +10,7 @@ from os.path import isfile, join
 
 from common import *
 
-logpath = "log.txt"
 logdir = "logs"
-
 
 class More:
     def __init__(self, num_lines):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from sexpdata import Symbol
+from sexpdata import Symbol, loads
 import functools
 
 def assoc(key, sexp):
@@ -26,6 +26,7 @@ def get_cmd_type(entry):
     return body[1][0]
 
 def try_loads(sexp):
+    entry = loads(sexp)
     try:
         entry = loads(sexp)
         assert get_user(entry) != None
