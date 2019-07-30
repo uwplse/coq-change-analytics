@@ -5,30 +5,12 @@ import functools
 from datetime import datetime
 from tqdm import tqdm
 import argparse
+from os import listdir
+from os.path import isfile, join
 
-logpath = "log.txt"
+from common import *
 
-def assoc(key, sexp):
-    if not isinstance(sexp, list):
-        return None
-    for entry in sexp:
-        if isinstance(entry, list) and entry[0] == Symbol(key):
-            return entry[1]
-    return None
-
-def get_body(entry):
-    return entry[-1]
-
-get_user = functools.partial(assoc, "user")
-get_time = functools.partial(assoc, "time")
-get_session = functools.partial(assoc, "session")
-get_id = functools.partial(assoc, "id")
-
-def get_cmd_type(entry):
-    body = get_body(entry)
-    assert body[0] == Symbol("Control")
-    assert isinstance(body[1], list)
-    return body[1][0]
+logdir = "logs"
 
 class More:
     def __init__(self, num_lines):
@@ -48,54 +30,46 @@ def multipartition(items, f):
         categories[key].append(item)
     return list(categories.values())
 
-def try_loads(sexp):
-    try:
-        entry = loads(sexp)
-        assert get_user(entry) != None
-        assert get_time(entry)
-        assert get_session(entry)
-        return entry
-    except:
-        return None
-
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--by", choices=['user', 'session'], default='session')
-    parser.add_argument("--user", type=int, default=-1)
+    parser.add_argument("--user", type=int, default=-2)
     parser.add_argument("--no-paginate", dest="paginate", action='store_false')
     args = parser.parse_args()
 
     #### User selection
     selected_user = args.user
-    if args.by == 'user':
-        users = set()
-        with open(logpath, 'r') as logfile:
-            for line in tqdm(logfile):
-                entry = try_loads(line)
-                if entry:
-                    users.add(get_user(entry))
-        print("Select user:")
+    users = sorted([f for f in listdir(logdir) if isfile(join(logdir, f))])
+    while selected_user == -2:
+        print("Select user (-1 for all):")
         print(users)
-        while selected_user == -1:
-            try:
-                selected_user = int(input("User #:"))
-                if selected_user not in users:
-                    print("Not a valid user!")
-                    selected_user = -1
-            except:
-                print("Not an integer!")
+        try:
+            i = input("User #: ")
+            selected_user = int(i)
+            if str(selected_user) not in users and selected_user != -1:
+                print(f"{selected_user} is not a valid user!")
+                selected_use = -2
+        except:
+            selected_user = -2
 
     #### Session selection
     sessions = set()
-    with open(logpath, 'r') as logfile:
-        for line in tqdm(logfile):
-            entry = try_loads(line)
-            if entry and (selected_user == -1 or get_user(entry) == selected_user):
-                sessions.add((get_user(entry), get_session(entry)))
+    if selected_user == -1:
+        for user in users:
+            with open(join(logdir, str(user)), 'r') as logfile:
+                for line in tqdm(logfile):
+                    entry = try_loads(line)
+                    if entry:
+                        sessions.add((get_user(entry), get_session(entry)))
+    else:
+        with open(join(logdir, str(selected_user)), 'r') as logfile:
+            for line in tqdm(logfile):
+                entry = try_loads(line)
+                if entry:
+                    sessions.add((get_user(entry), get_session(entry)))
     session_list = list(sessions)
 
     more = More(num_lines=30)
-    if args.by == "session":
+    if selected_user == -1:
         lines = [f"{idx}: User {user}, Start time: {datetime.fromtimestamp(float(timestamp))}"
                    for idx, (user, timestamp) in enumerate(sorted(session_list))]
     else:
@@ -122,11 +96,19 @@ def main():
     print(f"Selected session {selected_session}")
 
     cmds = []
-    with open(logpath, 'r') as logfile:
-        for line in tqdm(logfile):
-            entry = try_loads(line)
-            if entry and (get_user(entry), get_session(entry)) == selected_session:
-                cmds.append(entry)
+    if selected_user == -1:
+        for user in users:
+            with open(join(logdir, str(user)), 'r') as logfile:
+                for line in tqdm(logfile):
+                    entry = try_loads(line)
+                    if entry and (get_user(entry), get_session(entry)) == selected_session:
+                        cmds.append(entry)
+    else:
+        with open(join(logdir, str(selected_user)), 'r') as logfile:
+            for line in tqdm(logfile):
+                entry = try_loads(line)
+                if entry and (get_user(entry), get_session(entry)) == selected_session:
+                    cmds.append(entry)
 
     print(f"{len(cmds)} commands")
     for cmd in cmds:
