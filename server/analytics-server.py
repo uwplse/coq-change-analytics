@@ -41,6 +41,9 @@ def save_message(sexp):
 @app.route("/register/", methods=["POST"])
 def register():
     try:
+        if not os.path.exists(userpath):
+            with open(userpath, 'w') as f:
+                f.write("()\n")
         with open(userpath, 'r') as f:
             users = f.read()
             profiles = loads(users)
