@@ -71,3 +71,7 @@ Set Debug Analytics.
 
 Please report any bugs that you find to Github. If you need to temporarily disable the plugin due to a severe bug,
 you can comment out the line in your coqrc; if you do so, please let us know so we prioritize fixing the bug.
+
+# Removing the Plugin
+
+When you are done with the study, please remove the line you added to your [coqrc](https://coq.inria.fr/refman/practical-tools/coq-commands.html#by-resource-file) resource file.
