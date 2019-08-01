@@ -111,8 +111,7 @@ def main():
                 if entry and (get_user(entry), get_session(entry)) == selected_session:
                     cmds.append(entry)
 
-    print(f"{len(cmds)} commands")
-    for cmd in cmds:
+    for cmd in sorted(cmds, key=lambda cmd: get_time(cmd)):
         if get_cmd_type(cmd) == Symbol("StmAdd"):
             print("{}: {}".format(get_id(cmd), get_body(cmd)[1][2]))
         elif get_cmd_type(cmd) == Symbol("StmCancel"):
