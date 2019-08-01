@@ -57,13 +57,17 @@ let profile_file =
 let temp_log_file =
   Printf.sprintf "%s/%s" (Sys.getenv "HOME") ".analytics_log"
                  
-(*
- * Error message when there may not be a network connection
- *)
+(* --- Errors and warnings --- *)
+
 let err_no_network =
   "An error occurred. Please check your network connection. " ^
   "If your network connection is working, and you continue to " ^
   "encounter this error, please report a bug in " ^
+  "the uwplse/coq-change-analytics Github project."
+
+let err_bad_user =
+  "An Analytics profile for the user with your ID does not exist. " ^
+  "So that we can help you fix this issue, please report this in " ^
   "the uwplse/coq-change-analytics Github project."
 
 let warn_no_network =
@@ -148,12 +152,18 @@ let sync_profile_questions id =
     Client.get (Uri.add_query_param' profile_uri params) >>= fun (resp, body) ->
     let _ = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
+  let qs_str =
+    try
+      Lwt_main.run response
+    with _ ->
+      warn_no_network ();
+      "()"
+  in
   try
-    let qs = Sexp.of_string (Lwt_main.run response) in
+    let qs = Sexp.of_string qs_str in
     Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs
   with _ ->
-    warn_no_network ();
-    []
+    CErrors.user_err (Pp.str err_bad_user)
 
 (*
  * If the user must answer more questions,
