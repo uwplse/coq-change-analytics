@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from sexpdata import loads, dump, Symbol
+from sexpdata import loads, dumps, Symbol
 import functools
 from datetime import datetime
 from tqdm import tqdm
@@ -12,13 +12,16 @@ from common import *
 
 logdir = "logs"
 
+import sys
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 class More:
     def __init__(self, num_lines):
         self.num_lines = num_lines
     def __ror__(self, other):
         s = str(other).split("\n")
         for i in range(0, len(s), self.num_lines):
-            print(*s[i: i + self.num_lines], sep="\n")
+            eprint(*s[i: i + self.num_lines], sep="\n")
             input("Press <Enter> for more")
 
 def multipartition(items, f):
@@ -34,19 +37,23 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--user", type=int, default=-2)
     parser.add_argument("--no-paginate", dest="paginate", action='store_false')
+    parser.add_argument("--mode", choices=["raw", "human"], default="human")
+    parser.add_argument("--unsorted", action='store_false', dest="sorted")
     args = parser.parse_args()
 
     #### User selection
     selected_user = args.user
     users = sorted([f for f in listdir(logdir) if isfile(join(logdir, f))])
     while selected_user == -2:
-        print("Select user (-1 for all):")
-        print(users)
+        eprint("Select user (-1 for all):")
+        eprint(users)
         try:
-            i = input("User #: ")
+            eprint("User #: ", end="")
+            sys.stderr.flush()
+            i = input()
             selected_user = int(i)
             if str(selected_user) not in users and selected_user != -1:
-                print(f"{selected_user} is not a valid user!")
+                eprint(f"{selected_user} is not a valid user!")
                 selected_use = -2
         except:
             selected_user = -2
@@ -76,14 +83,16 @@ def main():
         lines = [f"{idx}: Start time: {datetime.fromtimestamp(float(timestamp))}"
                    for idx, (user, timestamp) in enumerate(session_list)]
     if args.paginate:
-        print("\n".join(lines))
+        eprint("\n".join(lines))
     else:
         "\n".join(lines) | more
 
     session_idx = -1
     while session_idx == -1:
         try:
-            session_idx = int(input("Session #:"))
+            eprint("Session#: ", end="")
+            sys.stderr.flush()
+            session_idx = int(input())
             if session_idx > len(sessions):
                 print("Not a valid session!")
                 session_idx = -1
@@ -94,7 +103,7 @@ def main():
     #### Print
 
     user, timestamp = selected_session
-    print(f"Selected session {datetime.fromtimestamp(float(timestamp))}")
+    eprint(f"Selected session {datetime.fromtimestamp(float(timestamp))}")
 
     cmds = []
     if selected_user == -1:
@@ -111,36 +120,23 @@ def main():
                 if entry and (get_user(entry), get_session(entry)) == selected_session:
                     cmds.append(entry)
 
-    for cmd in sorted(cmds, key=lambda cmd: get_time(cmd)):
-        if get_cmd_type(cmd) == Symbol("StmAdd"):
-            print("{}: {}".format(get_id(cmd), get_body(cmd)[1][2]))
-        elif get_cmd_type(cmd) == Symbol("StmCancel"):
-            print("CANCEL {}".format(get_body(cmd)[1][1][0]))
-        else:
-            assert get_cmd_type(cmd) == Symbol("StmObserve")
+    if args.sorted:
+        sorted_cmds = sorted(cmds, key=lambda cmd: get_time(cmd))
+    else:
+        sorted_cmds = cmds
 
-
-    # sessions = multipartition(log_entries, lambda entry: (get_user(entry), get_session(entry)))
-    # print("Select session:")
-    # for idx, cmds in enumerate(sessions):
-    #     user, session = get_user(cmds[0]), get_session(cmds[0])
-    #     print("{}: IP {}, Start time: {}".format(idx, user,
-    #                                              datetime.datetime.fromtimestamp(float(session))))
-
-    # session_id = -1
-    # while session_id == -1:
-    #     try:
-    #         session_id = int(input("Session #:"))
-    #     except:
-    #         print("Not an integer!")
-
-    # for cmd in sessions[session_id]:
-    #     if get_cmd_type(cmd) == Symbol("StmAdd"):
-    #         print("{}: {}".format(get_id(cmd), get_body(cmd)[1][2]))
-    #     elif get_cmd_type(cmd) == Symbol("StmCancel"):
-    #         print("CANCEL {}".format(get_body(cmd)[1][1][0]))
-    #     else:
-    #         assert get_cmd_type(cmd) == Symbol("StmObserve")
+    if args.mode == "raw":
+        for cmd in sorted_cmds:
+            print(dumps(cmd))
+    else:
+        for cmd in sorted_cmds:
+            if get_cmd_type(cmd) == Symbol("StmAdd"):
+                print("{}: {}".format(get_id(cmd), get_body(cmd)[1][2]))
+            elif get_cmd_type(cmd) == Symbol("StmCancel"):
+                print("CANCEL {}".format(get_body(cmd)[1][1][0]))
+            else:
+                assert get_cmd_type(cmd) == Symbol("StmObserve")
+                print("OBSERVE {}".format(get_body(cmd)[1][1]))
 
 if __name__ == "__main__":
     main()
