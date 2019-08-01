@@ -56,7 +56,20 @@ let profile_file =
  *)
 let temp_log_file =
   Printf.sprintf "%s/%s" (Sys.getenv "HOME") ".analytics_log"
+                 
+(*
+ * Error message when there may not be a network connection
+ *)
+let err_no_network =
+  "An error occurred. Please check your network connection. " ^
+  "If your network connection is working, and you continue to " ^
+  "encounter this error, please report a bug in " ^
+  "the uwplse/coq-change-analytics Github project."
 
+let warn_no_network =
+  CWarnings.create ~name:"analytics_no_network" ~category:"analytics"
+                   (fun _ -> Pp.strbrk err_no_network)
+                            
 (* --- User Profile --- *)
 
 (*
@@ -109,12 +122,7 @@ let register () : unit =
         Sys.remove profile_file
       else
         ()
-    in
-    CErrors.user_err
-      (Pp.str ("An error occurred. Please check your network connection. " ^
-               "If your network connection is working, and you continue to " ^
-               "encounter this error, please report a bug in " ^
-               "the uwplse/coq-change-analytics Github project."))
+    in CErrors.user_err (Pp.str err_no_network)
 
 (*
  * Open the user profile for reading
@@ -140,8 +148,12 @@ let sync_profile_questions id =
     Client.get (Uri.add_query_param' profile_uri params) >>= fun (resp, body) ->
     let _ = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
-  let qs = Sexp.of_string (Lwt_main.run response) in
-  Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs
+  try
+    let qs = Sexp.of_string (Lwt_main.run response) in
+    Base.List.t_of_sexp (Base.List.t_of_sexp Base.String.t_of_sexp) qs
+  with _ ->
+    warn_no_network ();
+    []
 
 (*
  * If the user must answer more questions,
@@ -154,7 +166,11 @@ let update_profile id answers =
     Client.post_form ~params:params update_uri >>= fun (resp, body) ->
     let _ = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
-  Lwt_main.run response
+  try
+    ignore (Lwt_main.run response)
+  with _ ->
+    warn_no_network ()
+    
                
 (*
  * Get the answer to a profile question from user input
@@ -235,7 +251,7 @@ let sync_profile id =
   else
     (* profile is out of date *)
     let answers = ask_profile_questions qs in
-    ignore(update_profile id answers);
+    update_profile id answers;
     print_string "Thank you!"; print_newline ()
 
 (*
@@ -256,7 +272,7 @@ let user_id =
          "Trying to generate a new one. " ^
          "If you continue to encounter this error, or if you have used " ^
          "Analytics with issues in the past, please report a bug " ^
-           "in the uwplse/coq-change-analytics Github project.")
+         "in the uwplse/coq-change-analytics Github project.")
     in print_newline ();
     Sys.remove profile_file;
     let input = open_profile () in
