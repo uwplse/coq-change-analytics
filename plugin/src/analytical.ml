@@ -51,6 +51,12 @@ let send_frequency = 5
 let profile_file =
   Printf.sprintf "%s/%s" (Sys.getenv "HOME") ".analytics_profile"
 
+(*
+ * Name of a file to log to temporarily, when the network is down
+ *)
+let temp_log_file =
+  Printf.sprintf "%s/%s" (Sys.getenv "HOME") ".analytics_log"
+
 (* --- User Profile --- *)
                      
 (*
@@ -258,15 +264,31 @@ let add_to_buffer (output : Pp.t) : unit =
   buffer := output :: (! buffer)
 
 (*
+ * When there is no network connection, log a message locally to a file
+ *)
+let log_message_local msg : unit =
+  let output = open_out_gen [Open_append; Open_creat] 0o666 temp_log_file in
+  output_string output msg;
+  close_out output
+
+(*
  * Log a message and send it to the server
  *)
-let log () : unit =
-  let msg = buffer_to_string () in
+let log_message msg : unit =
   let response =
     Client.post_form ~params:[("msg", [msg])] server_uri >>= fun (resp, body) ->
     let _ = resp |> Response.status |> Code.code_of_status in
     body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
-  ignore (Lwt_main.run response)
+  try
+    ignore (Lwt_main.run response)
+  with _ ->
+    log_message_local msg   
+
+(*
+ * Log a message from a buffer and send it to the server
+ *)
+let log () : unit =
+  log_message (buffer_to_string ())
 
 (*
  * Log the buffer remotely or locally
@@ -279,7 +301,19 @@ let log_buffer () : unit =
       log ()
   in flush_buffer ()
 
-let _ = Pervasives.at_exit log_buffer
+(*
+ * Network outage handling: See if there is an .analytics_log, and if so,
+ * send it to the server.
+ *)
+let handle_outages () =
+  if Sys.file_exists temp_log_file then
+    let input = open_in temp_log_file in
+    let msg = really_input_string input (in_channel_length input) in
+    close_in input;
+    Sys.remove temp_log_file;
+    log_message msg
+  else
+    ()
 
 (*
  * Output analytics, using opt_debug_analytics to determine
@@ -371,8 +405,19 @@ let print_state_exec (state : Stateid.t) : unit =
   in print_analytics (Pp.str (Sexp.to_string exp)) true
 
 (*
- * Setting the hooks
+ * Set the hooks for logging
  *)
 let _ = Hook.set Stm.document_add_hook print_state_add
 let _ = Hook.set Stm.document_edit_hook print_state_edit
 let _ = Hook.set Stm.sentence_exec_hook print_state_exec
+
+(*
+ * Always log on exit
+ *)
+let _ = Pervasives.at_exit log_buffer
+
+(*
+ * Try to handle outages on exit and on startup
+ *)
+let _ = Pervasives.at_exit handle_outages
+let _ = handle_outages ()
