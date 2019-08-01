@@ -33,10 +33,10 @@ def main():
             entry = try_loads(line)
             user = get_user(entry)
             if user in seen_users or args.append:
-                with open(args.outdir + str(user), 'a') as f:
+                with open(os.path.join(args.outdir, str(user)), 'a') as f:
                     f.write(line)
             else:
-                with open(args.outdir + str(user), 'w') as f:
+                with open(os.path.join(args.outdir, str(user)), 'w') as f:
                     f.write(line)
                 seen_users.add(user)
 
