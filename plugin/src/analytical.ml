@@ -58,7 +58,34 @@ let temp_log_file =
   Printf.sprintf "%s/%s" (Sys.getenv "HOME") ".analytics_log"
 
 (* --- User Profile --- *)
-                     
+
+(*
+ * Call the server to register a profile, and return the identifier.
+ * Don't yet write it to file.
+ *)
+let try_register () : string =
+  let register_uri = Uri.with_path server_uri "/register/" in
+  try
+    let response =
+      Client.post_form ~params:[] register_uri >>= fun (resp, body) ->
+      let _ = resp |> Response.status |> Code.code_of_status in
+      body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
+    Lwt_main.run response
+  with _ ->
+    ""
+
+(*
+ * Check if the identifier is valid.
+ * Note that this does not check if the server is aware of the identifier.
+ * This just checks to make sure the format is correct.
+ *)
+let id_is_valid id : bool =
+  match int_of_string_opt id with
+  | Some _ ->
+     true
+  | _ ->
+     false
+               
 (*
  * If the user profile does not exist, ask them to register
  *
@@ -66,16 +93,28 @@ let temp_log_file =
  * Eventually, we will ask questions like user experience and type,
  * and send those to the server.
  *)
-let register () =
-  let register_uri = Uri.with_path server_uri "/register/" in
-  let output = open_out profile_file in
-  let response =
-    Client.post_form ~params:[] register_uri >>= fun (resp, body) ->
-    let _ = resp |> Response.status |> Code.code_of_status in
-    body |> Cohttp_lwt.Body.to_string >|= fun body -> body in
-  let id = Lwt_main.run response in
-  Printf.fprintf output "%s\n" id;
-  close_out output
+let register () : unit =
+  print_string
+    ("Registering a profile with the Analytics server. " ^
+     "You will need a network connection.");
+  print_newline ();
+  let id = try_register () in
+  if id_is_valid id then
+    let output = open_out profile_file in
+    Printf.fprintf output "%s\n" id;
+    close_out output
+  else
+    let _ =
+      if Sys.file_exists profile_file then
+        Sys.remove profile_file
+      else
+        ()
+    in
+    CErrors.user_err
+      (Pp.str ("An error occurred. Please check your network connection. " ^
+               "If your network connection is working, and you continue to " ^
+               "encounter this error, please report a bug in " ^
+               "the uwplse/coq-change-analytics Github project."))
 
 (*
  * Open the user profile for reading
@@ -198,17 +237,39 @@ let sync_profile id =
     let answers = ask_profile_questions qs in
     ignore(update_profile id answers);
     print_string "Thank you!"; print_newline ()
-                  
+
 (*
  * Get the user ID from the profile, creating it if it doesn't exist
  * Prompt the user for extra information if the server says so
  *)
 let user_id =
   let input = open_profile () in
-  let id = input_line input in
+  let id = try input_line input with _ -> "" in
   close_in input;
-  sync_profile id;
-  id
+  if id_is_valid id then
+    let _ = sync_profile id in
+    id
+  else
+    let _ =
+      print_string
+        ("There was an error reading your Analytics profile. " ^
+         "Trying to generate a new one. " ^
+         "If you continue to encounter this error, or if you have used " ^
+         "Analytics with issues in the past, please report a bug " ^
+           "in the uwplse/coq-change-analytics Github project.")
+    in print_newline ();
+    Sys.remove profile_file;
+    let input = open_profile () in
+    let id = try input_line input with _ -> "" in
+    close_in input;
+    if id_is_valid id then
+      let _ = sync_profile id in
+      id
+    else
+      failwith
+        ("Could not create a new Analytics profile. " ^
+         "Please report a bug in the uwplse/coq-change-analytics Github " ^
+         "project.")
                    
 (* --- Options --- *)
 
