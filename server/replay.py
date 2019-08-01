@@ -66,15 +66,15 @@ def main():
                 entry = try_loads(line)
                 if entry:
                     sessions.add((get_user(entry), get_session(entry)))
-    session_list = list(sessions)
+    session_list = sorted(list(sessions))
 
     more = More(num_lines=30)
     if selected_user == -1:
         lines = [f"{idx}: User {user}, Start time: {datetime.fromtimestamp(float(timestamp))}"
-                   for idx, (user, timestamp) in enumerate(sorted(session_list))]
+                   for idx, (user, timestamp) in enumerate(session_list)]
     else:
         lines = [f"{idx}: Start time: {datetime.fromtimestamp(float(timestamp))}"
-                   for idx, (user, timestamp) in enumerate(sorted(session_list))]
+                   for idx, (user, timestamp) in enumerate(session_list)]
     if args.paginate:
         print("\n".join(lines))
     else:
@@ -93,7 +93,8 @@ def main():
 
     #### Print
 
-    print(f"Selected session {selected_session}")
+    user, timestamp = selected_session
+    print(f"Selected session {datetime.fromtimestamp(float(timestamp))}")
 
     cmds = []
     if selected_user == -1:
