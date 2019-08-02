@@ -1,31 +1,39 @@
-There will be a consent form here, which the plugin will ask you to consent to.
-It will say all of these things nicely:
+CONSENT FORM
+-------------
 
-* I'm over 18
-* I'm fluent in English
-* I have been using Coq for at least a year
-* My answers to the profile questions are honest
-* If I did Alpha/Beta, I've removed my .analytics_profile before starting
-* I won't spoof other users
+By participating in this study, you agree that you are over 18, fluent in English,
+and have been using Coq for at least a year. You agree to answer the registration
+questions truthfully, and you agree not to spoof other users or otherwise
+purposely provide misleading data. You agree to keep the plugin enabled
+whenever possible during the data collection period of August 7th through
+September 7th, and to inform the study organizers if you must disable the 
+plugin for any reason.
 
-Then also, a summary of the data collected and how it will be used.
-Based on the IRB:
-For both rounds of data collection, we will collect the changes (code executed in the proof assistant, along with the
-time at which the code was executed) that programmers make while developing proofs of program correctness
-while the tool is running. For the registration questions, we will also collect information on the level of experience
-the programmer has using the proof assistant, the purpose for which and frequency with which the programmer
-uses the proof assistant, and about the programmer's development processes and environment. This information
-will be stored with a unique identifier for each programmer that the tool generates.
-
-There will be no identifiable links between personally
-identifiable information and the data in any publications. We will also be collecting code changes that
-participants make, and the server will collect IP addresses. The IP addresses will not be stored with the resulting
-data, and we will obtain consent from participants to sharing code changes.
-The dataset will be released etc. and used etc. for stuff.
-
-Then:
- 
 * I have read the consent form [y/n]
 * I understand and agree to all of the above [y/n]
-* I consent to participate in this study [y/n]
+
+DATA POLICY
+-------------
+
+By participating in this study, you consent to the following data policy:
+The plugin will collect data on the changes (code executed in Coq, 
+along with the time at which the code was executed)
+that you make while developing proofs during the data collection period of 
+August 7th through September 7th. During registration, the plugin will also 
+collect and store information on your level of experience
+in Coq, the purpose for which and frequency with which you use Coq, and
+about your development processes and environment. This information will be stored
+with a unique identifier, and the unique identifier will be linked to the
+collected data as well. The server will collect IP addresses;
+the IP addresses will not be stored with the resulting data.
+
+The collected data (unique identifiers, code changes, and answers to registration
+questions) will be used to guide the development of a proof patching tool
+and of a machine learning tool. The data will also be used in a publication,
+and it will be publicly available for use by other researchers.
+There will be no identifiable links between personally identifiable information
+and the data in any publications, or in the publicly available dataset.  
+ 
+* I have read the data policy [y/n]
+* I understand and consent to all of the above [y/n]
 
