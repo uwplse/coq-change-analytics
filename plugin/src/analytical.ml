@@ -4,6 +4,7 @@ open Cohttp
 open Cohttp_lwt_unix
 open Names
 open Sexplib
+open Consent
 
 (* --- Constants --- *)
 
@@ -56,7 +57,7 @@ let profile_file =
  *)
 let temp_log_file =
   Printf.sprintf "%s/%s" (Sys.getenv "HOME") ".analytics_log"
-                 
+
 (* --- Errors and warnings --- *)
 
 let err_no_network =
@@ -70,12 +71,61 @@ let err_bad_user =
   "So that we can help you fix this issue, please report this in " ^
   "the uwplse/coq-change-analytics Github project."
 
+let err_must_consent =
+  "You must consent to participate in this study. If you have concerns " ^
+  "about the consent form or about the data policy, please contact the " ^
+  "study organizers."
+
 let warn_no_network =
   CWarnings.create ~name:"analytics_no_network" ~category:"analytics"
                    (fun _ -> Pp.strbrk err_no_network)
                             
 (* --- User Profile --- *)
 
+(*
+ * If the user is new, get consent before registering.
+ * If the user does not consent, do not continue with registration.
+ *)
+let get_consent () : unit =
+  let rec read_consent_answer second_try =
+    let answer : string =
+      try
+        read_line ()
+      with _ ->
+        ""
+    in
+    if answer = "y" then
+      ()
+    else if answer = "n" || second_try then
+      CErrors.user_err (Pp.str err_must_consent)
+    else
+      let _ = print_string "Invalid input. Please try again." in
+      print_newline ();
+      read_consent_answer true
+  in
+  print_string "Before participating in this study, we will need your consent.";
+  print_newline ();
+  print_string consent_form_text;
+  print_newline ();
+  print_string consent_q1;
+  print_newline ();
+  read_consent_answer false;
+  print_string consent_q2;
+  print_newline ();
+  read_consent_answer false;
+  print_string "We will also need you to agree to the data policy.";
+  print_newline ();
+  print_string data_policy_text;
+  print_newline ();
+  print_string data_policy_q1;
+  print_newline ();
+  read_consent_answer false;
+  print_string data_policy_q2;
+  print_newline ();
+  read_consent_answer false;
+  print_string "Thank you!";
+  print_newline ()
+  
 (*
  * Call the server to register a profile, and return the identifier.
  * Don't yet write it to file.
@@ -135,6 +185,7 @@ let open_profile () =
   try
     open_in profile_file
   with _ ->
+    get_consent ();
     register ();
     try
       open_in profile_file
