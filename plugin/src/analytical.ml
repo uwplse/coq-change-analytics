@@ -481,7 +481,7 @@ let print_state_add (v : Vernacexpr.vernac_control) (state : Stateid.t) : unit =
                           Atom (Pervasives.string_of_float (Unix.gettimeofday ()))];
                       List [
                           Atom "id";
-                          Atom (Stateid.to_string state)];
+                          Atom (Pervasives.string_of_int ((Stateid.to_int state) + 1))];
                       List [
                           Atom "user";
                           Atom user_id];
