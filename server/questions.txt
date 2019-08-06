@@ -29,4 +29,9 @@
      "coqc"
      "CoqIDE"
      "Proof General"
-     "other"))
+     "other")
+("Please tell us what version of Coq you are using"
+     "master"
+     "8.10"
+     "8.9"
+     "8.8"))
