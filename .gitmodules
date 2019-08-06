@@ -1,5 +1,5 @@
 [submodule "plugin/coq"]
 	path = plugin/coq
-	url = https://github.com/coq/coq.git
-        branch = master
+	url = https://github.com/tlringer/coq
+        branch = v8.9-backport
 

@@ -4,7 +4,7 @@ echo "Thank you for installing Coq Change Analytics! We'll first install a few d
 
 opam install sexplib cohttp cohttp-lwt-unix
 
-echo "Done. Now, to run this plugin, you need Coq 8.10+β2 or later (master also works). Do you already have this version of Coq installed? [y/n]"
+echo "Done. You have chosen the Coq 8.9 version of this plugin. To run this version, you need a special version of Coq 8.9 that has a few simple changes (none to the kernel) that did not make it into Coq 8.9 (but are in Coq 8.10). Do you already have this version of Coq installed? [y/n]"
 
 read_in () {
   while :
@@ -29,21 +29,14 @@ if read_in; then
   cp ./make-user ./make
   echo "Done. From now on, run make in this directory to build the plugin."
 else
-  echo "Would you like for us to pull a compatible version of Coq for you? [y/n]"
+  echo "Would you like for us to pull this version of Coq for you? [y/n]"
   
   if read_in; then
-    echo "OK, pulling a compatible version of Coq for you."
+    echo "OK, pulling this version of Coq for you."
     git submodule init
     git submodule sync
     git submodule update --init --recursive --remote
-    echo "We can either pull Coq 8.10+β2 or the master branch of Coq. Would you like Coq 8.10+β2? [y/n]"
-    if read_in; then
-      echo "Pulling Coq 8.10+β2."
-      (cd coq && git checkout tags/V8.10+beta2 && cd ..)
-    else
-      echo "Pulling master."
-      (cd coq && git pull origin master && cd ..)
-    fi
+    (cd coq && git checkout v8.9-backport && cd ..)
     echo "Would you prefer to install this version of Coq locally, so that you can keep other versions of Coq around on your computer more easily? [y/n]"
 
     if read_in; then
