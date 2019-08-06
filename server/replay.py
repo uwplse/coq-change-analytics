@@ -31,12 +31,22 @@ def multipartition(items, f):
         categories[key].append(item)
     return list(categories.values())
 
+def parseDate(s):
+    return datetime.strptime(s, "%Y-%m-%d")
+
+def inDateRange(args, entry):
+    session_time = datetime.fromtimestamp(get_session(entry))
+    return (not args.before or session_time < args.before) and \
+        (not args.after or session_time > args.after)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--user", type=int, default=-2)
     parser.add_argument("--no-paginate", dest="paginate", action='store_false')
     parser.add_argument("--mode", choices=["raw", "human"], default="human")
-    parser.add_argument("--unsorted", action='store_false', dest="sorted")
+    parser.add_argument("--before", type=parseDate)
+    parser.add_argument("--after", type=parseDate)
     args = parser.parse_args()
 
     #### User selection
@@ -61,13 +71,13 @@ def main():
             with open(join(logdir, str(user)), 'r') as logfile:
                 for line in tqdm(logfile):
                     entry = try_loads(line)
-                    if entry:
+                    if entry and inDateRange(args, entry):
                         sessions.add((get_user(entry), get_session(entry)))
     else:
         with open(join(logdir, str(selected_user)), 'r') as logfile:
             for line in tqdm(logfile):
                 entry = try_loads(line)
-                if entry:
+                if entry and inDateRange(args, entry):
                     sessions.add((get_user(entry), get_session(entry)))
     session_list = sorted(list(sessions))
 
