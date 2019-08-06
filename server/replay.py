@@ -183,13 +183,13 @@ def isUnsetSilent(entry):
         get_body(entry) == [Symbol("Control"), [Symbol("StmAdd"), [], "Unset Silent. "]]
 ides = ["coqtop", "coqc", "CoqIDE", "Proof General", "other"]
 def userUsesIDE(profiles, ide : str, entry) -> bool:
-    return ides[assoc(profiles[get_user(entry)], "answers")[4]] == ide
+    return ides[assoc("answers", profiles[get_user(entry)])[4]] == ide
 
 def hoAnd(*fs):
     if len(fs) == 1:
         return fs[0]
     else:
-        return lambda *args: f[0](*args) and hoAnd(f[1:])(*args)
+        return lambda *args: fs[0](*args) and hoAnd(*fs[1:])(*args)
 
 T = TypeVar('T')
 def sublist_replace(lst : List[T], sublst : List[Callable[[T], bool]],
