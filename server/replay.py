@@ -12,16 +12,13 @@ from common import *
 
 logdir = "logs"
 
-import sys
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
 class More:
     def __init__(self, num_lines):
         self.num_lines = num_lines
     def __ror__(self, other):
         s = str(other).split("\n")
         for i in range(0, len(s), self.num_lines):
-            eprint(*s[i: i + self.num_lines], sep="\n")
+            print(*s[i: i + self.num_lines], sep="\n")
             input("Press <Enter> for more")
 
 def multipartition(items, f):
@@ -45,15 +42,13 @@ def main():
     selected_user = args.user
     users = sorted([f for f in listdir(logdir) if isfile(join(logdir, f))])
     while selected_user == -2:
-        eprint("Select user (-1 for all):")
-        eprint(users)
+        print("Select user (-1 for all):")
+        print(users)
         try:
-            eprint("User #: ", end="")
-            sys.stderr.flush()
-            i = input()
+            i = input("User #: ")
             selected_user = int(i)
             if str(selected_user) not in users and selected_user != -1:
-                eprint(f"{selected_user} is not a valid user!")
+                print(f"{selected_user} is not a valid user!")
                 selected_use = -2
         except:
             selected_user = -2
@@ -83,16 +78,14 @@ def main():
         lines = [f"{idx}: Start time: {datetime.fromtimestamp(float(timestamp))}"
                    for idx, (user, timestamp) in enumerate(session_list)]
     if args.paginate:
-        eprint("\n".join(lines))
+        print("\n".join(lines))
     else:
         "\n".join(lines) | more
 
     session_idx = -1
     while session_idx == -1:
         try:
-            eprint("Session#: ", end="")
-            sys.stderr.flush()
-            session_idx = int(input())
+            session_idx = int(input("Session #:"))
             if session_idx > len(sessions):
                 print("Not a valid session!")
                 session_idx = -1
@@ -103,7 +96,7 @@ def main():
     #### Print
 
     user, timestamp = selected_session
-    eprint(f"Selected session {datetime.fromtimestamp(float(timestamp))}")
+    print(f"Selected session {datetime.fromtimestamp(float(timestamp))}")
 
     cmds = []
     if selected_user == -1:
