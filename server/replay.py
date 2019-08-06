@@ -126,44 +126,46 @@ def main():
 
     sorted_cmds = sorted(cmds, key=lambda cmd: get_time(cmd))
 
-    processed_cmds = sublist_replace(sorted_cmds,
-                                     [isCancel, isObserve, isObserve, isObserve],
-                                     lambda msgs: mkEntry(get_time(msgs[0]),
-                                                          get_user(msgs[0]),
-                                                          get_session_module(msgs[0]),
-                                                          get_session(msgs[0]),
-                                                          [[Symbol("Control"),
-                                                            [Symbol("Failed"),
-                                                             get_body(msgs[0])[1][1][0]]]]))
+    if args.mode == "raw":
+        for cmd in sorted_cmds:
+            print(dumps(cmd))
+        return
+
+    processed_cmds = sublist_replace(
+        sorted_cmds,
+        [isCancel, isObserve, isObserve, isObserve],
+        lambda msgs: [mkEntry(get_time(msgs[0]),
+                              get_user(msgs[0]),
+                              get_session_module(msgs[0]),
+                              get_session(msgs[0]),
+                              [Symbol("Control"),
+                               [Symbol("Failed"),
+                                get_body(msgs[0])[1][1][0]]])])
 
     if sublist_contained(sorted_cmds, [isCancel, isUnsetSilent]):
         processed_cmds = sublist_replace(
             sorted_cmds,
             [isCancel,
              lambda entry: (not isCancel(entry)) and (not isUnsetSilent(entry))],
-            lambda msgs: mkEntry(get_time(msgs[0]),
+            lambda msgs: [mkEntry(get_time(msgs[0]),
                                  get_user(msgs[0]),
                                  get_session_module(msgs[0]),
                                  get_session(msgs[0]),
-                                 [[Symbol("Control"),
+                                 [Symbol("Control"),
                                    [Symbol("Failed"),
-                                    get_body(msgs[0])[1][1][0]]],
-                                  msgs[1]]))
+                                    get_body(msgs[0])[1][1][0]]]),
+                                  msgs[1]])
 
-    if args.mode == "raw":
-        for cmd in sorted_cmds:
-            print(dumps(cmd))
-    else:
-        for cmd in processed_cmds:
-            if get_cmd_type(cmd) == Symbol("StmAdd"):
-                print("{}: {}".format(get_id(cmd), get_body(cmd)[1][2]))
-            elif get_cmd_type(cmd) == Symbol("StmCancel"):
-                print("CANCEL {}".format(get_body(cmd)[1][1][0]))
-            elif get_cmd_type(cmd) == Symbol("Failed"):
-                print("FAILED {}".format(get_body(cmd)[1][1]))
-            else:
-                assert get_cmd_type(cmd) == Symbol("StmObserve")
-                # print("OBSERVE {}".format(get_body(cmd)[1][1]))
+    for cmd in processed_cmds:
+        if get_cmd_type(cmd) == Symbol("StmAdd"):
+            print("{}: {}".format(get_id(cmd), get_body(cmd)[1][2]))
+        elif get_cmd_type(cmd) == Symbol("StmCancel"):
+            print("CANCEL {}".format(get_body(cmd)[1][1][0]))
+        elif get_cmd_type(cmd) == Symbol("Failed"):
+            print("FAILED {}".format(get_body(cmd)[1][1]))
+        else:
+            assert get_cmd_type(cmd) == Symbol("StmObserve")
+            # print("OBSERVE {}".format(get_body(cmd)[1][1]))
 
 def isUnsetSilent(entry):
     return get_cmd_type(entry) == Symbol("StmAdd") and \
