@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from sexpdata import loads, dumps, Symbol
+from sexpdata import loads, dump, Symbol
 import functools
 from datetime import datetime
 from tqdm import tqdm
