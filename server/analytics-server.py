@@ -12,7 +12,7 @@ logpath = "log.txt"
 logdir = "logs"
 userpath = "users.txt"
 questionpath = "questions.txt"
-version_id = "2"
+version_id = "3"
 
 app = Flask(__name__)
 
