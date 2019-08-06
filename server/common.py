@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from sexpdata import Symbol, loads
+from typing import Any
 import functools
 
 def assoc(key, sexp):
@@ -17,7 +18,17 @@ def get_body(entry):
 get_user = functools.partial(assoc, "user")
 get_time = functools.partial(assoc, "time")
 get_session = functools.partial(assoc, "session")
+get_session_module = functools.partial(assoc, "session-module")
 get_id = functools.partial(assoc, "id")
+
+def isObserve(entry):
+    return get_cmd_type(entry) == Symbol("StmObserve")
+def isCancel(entry):
+    return get_cmd_type(entry) == Symbol("StmCancel")
+
+def mkEntry(time : float, user : int, module : str, session : float, body : Any):
+    return [['time', time], ['user', user], ['session-module', module],
+            ['session', session], body]
 
 def get_cmd_type(entry):
     body = get_body(entry)
