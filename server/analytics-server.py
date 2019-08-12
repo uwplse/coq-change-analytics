@@ -52,8 +52,9 @@ def register():
         profiles = []
         new_uid = "0"
     finally:
+        new_profiles_str = dumps(profiles + [[[Symbol("user"), new_uid]] + [[Symbol("version"), "0"]]]) + "\n"
         with open(userpath, 'w') as f:
-            f.write(dumps(profiles + [[[Symbol("user"), new_uid]] + [[Symbol("version"), "0"]]]) + "\n")
+            f.write(new_profiles_str)
         return str(new_uid)
 
 # Determine if a profile is up-to-date and, if not, ask the latest profile questions
@@ -78,10 +79,10 @@ def reset_profile():
     uid = request.form["id"]
     with open(userpath, 'r') as f:
         users = f.read()
-        profiles = loads(users)
+    profiles = loads(users)
+    new_profile = [[Symbol("user"), uid]] + [[Symbol("version"), "0"]]
+    profiles[int(uid)] = new_profile
     with open(userpath, 'w') as f:
-        new_profile = [[Symbol("user"), uid]] + [[Symbol("version"), "0"]]
-        profiles[int(uid)] = new_profile
         f.write(dumps(profiles))
     return "Succesfully reset\n"
 
@@ -92,10 +93,10 @@ def update_profile():
     answers = loads(request.form["answers"]) # list of 0-indexed offsets of answers for each question
     with open(userpath, 'r') as f:
         users = f.read()
-        print(users)
-        profiles = loads(users)
+    print(users)
+    profiles = loads(users)
+    new_profile = [[Symbol("user"), uid]] + [[Symbol("version"), version_id]] + [[Symbol("answers"), answers]]
+    profiles[int(uid)] = new_profile
     with open(userpath, 'w') as f:
-        new_profile = [[Symbol("user"), uid]] + [[Symbol("version"), version_id]] + [[Symbol("answers"), answers]]
-        profiles[int(uid)] = new_profile
         f.write(dumps(profiles))
     return "Updated"
