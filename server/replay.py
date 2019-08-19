@@ -169,11 +169,11 @@ def main():
 
     for cmd in processed_cmds:
         if get_cmd_type(cmd) == Symbol("StmAdd"):
-            print("{}: {}".format(get_id(cmd), get_body(cmd)[1][2]))
+            print("(*{}*): {}".format(get_id(cmd), get_body(cmd)[1][2]))
         elif get_cmd_type(cmd) == Symbol("StmCancel"):
-            print("CANCEL {}".format(get_body(cmd)[1][1][0]))
+            print("(*CANCEL {}*)".format(get_body(cmd)[1][1][0]))
         elif get_cmd_type(cmd) == Symbol("Failed"):
-            print("FAILED {}".format(get_body(cmd)[1][1]))
+            print("(*FAILED {}*)".format(get_body(cmd)[1][1]))
         else:
             assert get_cmd_type(cmd) == Symbol("StmObserve")
             # print("OBSERVE {}".format(get_body(cmd)[1][1]))
