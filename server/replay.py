@@ -13,13 +13,16 @@ from typing import List, TypeVar, Callable
 
 logdir = "logs"
 
+import sys
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 class More:
     def __init__(self, num_lines):
         self.num_lines = num_lines
     def __ror__(self, other):
         s = str(other).split("\n")
         for i in range(0, len(s), self.num_lines):
-            print(*s[i: i + self.num_lines], sep="\n")
+            eprint(*s[i: i + self.num_lines], sep="\n")
             input("Press <Enter> for more")
 
 def multipartition(items, f):
@@ -53,16 +56,21 @@ def main():
     selected_user = args.user
     users = sorted([f for f in listdir(logdir) if isfile(join(logdir, f))])
     while selected_user == -2:
-        print("Select user (-1 for all):")
-        print(users)
+        eprint("Select user (-1 for all):")
+        eprint(users)
         try:
-            i = input("User #: ")
+            eprint("User #: ", end="")
+            sys.stderr.flush()
+            i = input()
             selected_user = int(i)
             if str(selected_user) not in users and selected_user != -1:
-                print(f"{selected_user} is not a valid user!")
+                eprint(f"{selected_user} is not a valid user!")
                 selected_use = -2
         except:
             selected_user = -2
+
+    with open("users.txt", 'r') as usersfile:
+        profiles = loads(usersfile.read())
 
     #### Session selection
     sessions = set()
@@ -89,14 +97,16 @@ def main():
         lines = [f"{idx}: Start time: {datetime.fromtimestamp(float(timestamp))}"
                    for idx, (user, timestamp) in enumerate(session_list)]
     if args.paginate:
-        print("\n".join(lines))
+        eprint("\n".join(lines))
     else:
         "\n".join(lines) | more
 
     session_idx = -1
     while session_idx == -1:
         try:
-            session_idx = int(input("Session #:"))
+            eprint("Session#: ", end="")
+            sys.stderr.flush()
+            session_idx = int(input())
             if session_idx > len(sessions):
                 print("Not a valid session!")
                 session_idx = -1
@@ -107,7 +117,7 @@ def main():
     #### Print
 
     user, timestamp = selected_session
-    print(f"Selected session {datetime.fromtimestamp(float(timestamp))}")
+    eprint(f"Selected session {datetime.fromtimestamp(float(timestamp))}")
 
     cmds = []
     if selected_user == -1:
@@ -126,48 +136,60 @@ def main():
 
     sorted_cmds = sorted(cmds, key=lambda cmd: get_time(cmd))
 
-    processed_cmds = sublist_replace(sorted_cmds,
-                                     [isCancel, isObserve, isObserve, isObserve],
-                                     lambda msgs: mkEntry(get_time(msgs[0]),
-                                                          get_user(msgs[0]),
-                                                          get_session_module(msgs[0]),
-                                                          get_session(msgs[0]),
-                                                          [[Symbol("Control"),
-                                                            [Symbol("Failed"),
-                                                             get_body(msgs[0])[1][1][0]]]]))
-
-    if sublist_contained(sorted_cmds, [isCancel, isUnsetSilent]):
-        processed_cmds = sublist_replace(
-            sorted_cmds,
-            [isCancel,
-             lambda entry: (not isCancel(entry)) and (not isUnsetSilent(entry))],
-            lambda msgs: mkEntry(get_time(msgs[0]),
-                                 get_user(msgs[0]),
-                                 get_session_module(msgs[0]),
-                                 get_session(msgs[0]),
-                                 [[Symbol("Control"),
-                                   [Symbol("Failed"),
-                                    get_body(msgs[0])[1][1][0]]],
-                                  msgs[1]]))
-
     if args.mode == "raw":
         for cmd in sorted_cmds:
             print(dumps(cmd))
-    else:
-        for cmd in processed_cmds:
-            if get_cmd_type(cmd) == Symbol("StmAdd"):
-                print("{}: {}".format(get_id(cmd), get_body(cmd)[1][2]))
-            elif get_cmd_type(cmd) == Symbol("StmCancel"):
-                print("CANCEL {}".format(get_body(cmd)[1][1][0]))
-            elif get_cmd_type(cmd) == Symbol("Failed"):
-                print("FAILED {}".format(get_body(cmd)[1][1]))
-            else:
-                assert get_cmd_type(cmd) == Symbol("StmObserve")
-                # print("OBSERVE {}".format(get_body(cmd)[1][1]))
+        return
+
+    processed_cmds = sublist_replace(
+        sorted_cmds,
+        [hoAnd(isCancel, functools.partial(userUsesIDE, profiles, "CoqIDE")),
+         isObserve, isObserve, isObserve],
+        lambda msgs: [mkEntry(get_time(msgs[0]),
+                              get_user(msgs[0]),
+                              get_session_module(msgs[0]),
+                              get_session(msgs[0]),
+                              [Symbol("Control"),
+                               [Symbol("Failed"),
+                                get_body(msgs[0])[1][1][0]]])])
+
+    # if sublist_contained(sorted_cmds, [isCancel, isUnsetSilent]):
+    processed_cmds = sublist_replace(
+        sorted_cmds,
+        [hoAnd(isCancel, functools.partial(userUsesIDE, profiles, "Proof General")),
+         lambda entry: (not isCancel(entry)) and (not isUnsetSilent(entry))],
+        lambda msgs: [mkEntry(get_time(msgs[0]),
+                              get_user(msgs[0]),
+                              get_session_module(msgs[0]),
+                              get_session(msgs[0]),
+                              [Symbol("Control"),
+                               [Symbol("Failed"),
+                                get_body(msgs[0])[1][1][0]]]),
+                      msgs[1]])
+
+    for cmd in processed_cmds:
+        if get_cmd_type(cmd) == Symbol("StmAdd"):
+            print("{}: {}".format(get_id(cmd), get_body(cmd)[1][2]))
+        elif get_cmd_type(cmd) == Symbol("StmCancel"):
+            print("CANCEL {}".format(get_body(cmd)[1][1][0]))
+        elif get_cmd_type(cmd) == Symbol("Failed"):
+            print("FAILED {}".format(get_body(cmd)[1][1]))
+        else:
+            assert get_cmd_type(cmd) == Symbol("StmObserve")
+            # print("OBSERVE {}".format(get_body(cmd)[1][1]))
 
 def isUnsetSilent(entry):
     return get_cmd_type(entry) == Symbol("StmAdd") and \
         get_body(entry) == [Symbol("Control"), [Symbol("StmAdd"), [], "Unset Silent. "]]
+ides = ["coqtop", "coqc", "CoqIDE", "Proof General", "other"]
+def userUsesIDE(profiles, ide : str, entry) -> bool:
+    return ides[assoc("answers", profiles[get_user(entry)])[4]] == ide
+
+def hoAnd(*fs):
+    if len(fs) == 1:
+        return fs[0]
+    else:
+        return lambda *args: fs[0](*args) and hoAnd(*fs[1:])(*args)
 
 T = TypeVar('T')
 def sublist_replace(lst : List[T], sublst : List[Callable[[T], bool]],
