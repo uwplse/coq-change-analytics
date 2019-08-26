@@ -36,7 +36,7 @@ with open(fpath, 'r') as f:
         if (len(lines) > 0):
             group_lines.append(lines)
 
-# Now go through the cancellation and, for proof of concept, show first changed pair
+# Now go through the cancellation and find the corresponding lines
 for i in range(len(group_ends) - 1):
     j = i + 1
     k = i
@@ -49,9 +49,22 @@ for i in range(len(group_ends) - 1):
         else:
             real_start = group_ends[k] - len(group_lines[k]) + 1
             old_line_num = group_starts[j] - real_start
-    print("old: " + group_lines[k][old_line_num])
-    print("new: " + group_lines[j][0])
-    print("\n")
-        
 
-# Not done yet: compare each pair, group if similar enough, otherwise call "different"
+    # The first potential corresponding pair of lines
+    old_curr = old_line_num
+    new_curr = 0
+
+    # For now, spit to two files and then Git diff
+    with open(fpath + "-" + str(k) + "-old", 'w') as f: # TODO better filename, this is temporary
+        while (old_curr < len(group_lines[k])):
+            old = group_lines[k][old_curr]
+            f.write(old + "\n")
+            old_curr = old_curr + 1
+
+    # TODO new version
+    with open(fpath + "-" + str(k) + "-new", 'w') as f: # TODO better filename, this is temporary
+        while (new_curr < len(group_lines[j])):
+            new = group_lines[j][new_curr]
+            f.write(new + "\n")
+            new_curr = new_curr + 1
+
