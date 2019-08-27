@@ -71,13 +71,13 @@ for i in range(len(group_ends) - 1):
         next_state = final_state - len(group_lines[j]) + 1
 
         # Write in the offset lines
-        while curr_index < next_state:
+        while curr_index <= next_state:
             new_cumulative.append("")
             curr_index = curr_index + 1
 
         # Write in the post-offset lines
-        while curr_index < final_state:
-            new_cumulative.append(group_lines[j][curr_index - next_state + 1])
+        while curr_index <= final_state:
+            new_cumulative.append(group_lines[j][curr_index - next_state])
             curr_index = curr_index + 1
 
     # Dump new version to file
