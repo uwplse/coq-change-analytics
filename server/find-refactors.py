@@ -36,35 +36,59 @@ with open(fpath, 'r') as f:
         if (len(lines) > 0):
             group_lines.append(lines)
 
-# Now go through the cancellation and find the corresponding lines
+# Now go through the cancellations and find diffs
+old_cumulative = group_lines[0]
+for i in range(group_starts[0]):
+    old_cumulative.insert(0, "")
+
+# Dump initial version to file
+with open(fpath + "-" + str(0), 'w') as f: # TODO better filename, this is temporary
+     for curr_index in range(len(old_cumulative)):
+        if old_cumulative[curr_index] != "":
+            old = old_cumulative[curr_index]
+            f.write(old + "\n")
+
 for i in range(len(group_ends) - 1):
     j = i + 1
-    k = i
-    while (group_starts[j] < group_starts[k]):
-        k = k - 1
-    old_line_num = 0
-    if group_starts[j] != group_starts[k]:
-        if k == 0:
-            old_line_num = group_starts[j] - group_starts[k]
-        else:
-            real_start = group_ends[k] - len(group_lines[k]) + 1
-            old_line_num = group_starts[j] - real_start
 
-    # The first potential corresponding pair of lines
-    old_curr = old_line_num
-    new_curr = 0
+    # Where is the first cancellation?
+    post_cancel_index = group_starts[j]
 
-    # For now, spit to two files and then Git diff
-    with open(fpath + "-" + str(k) + "-old", 'w') as f: # TODO better filename, this is temporary
-        while (old_curr < len(group_lines[k])):
-            old = group_lines[k][old_curr]
-            f.write(old + "\n")
-            old_curr = old_curr + 1
+    # Up to the cancellation, no changes
+    new_cumulative = []
+    curr_index = 0
+    while (curr_index < post_cancel_index):
+        new_cumulative.append(old_cumulative[curr_index])
+        curr_index = curr_index + 1
 
-    # TODO new version
-    with open(fpath + "-" + str(k) + "-new", 'w') as f: # TODO better filename, this is temporary
-        while (new_curr < len(group_lines[j])):
-            new = group_lines[j][new_curr]
-            f.write(new + "\n")
-            new_curr = new_curr + 1
+    # Write in the changed state
+    new_cumulative.append(group_lines[j][0])
+    curr_index = curr_index + 1
+
+    # Write in the remaining lines, if applicable
+    if len(group_lines[j]) > 0:
+        final_state = group_ends[j]
+        next_state = final_state - len(group_lines[j]) + 1
+
+        # Write in the offset lines
+        while curr_index < next_state:
+            new_cumulative.append("")
+            curr_index = curr_index + 1
+
+        # Write in the post-offset lines
+        while curr_index < final_state:
+            new_cumulative.append(group_lines[j][curr_index - next_state + 1])
+            curr_index = curr_index + 1
+
+    # Dump new version to file
+    with open(fpath + "-" + str(j), 'w') as f: # TODO better filename, this is temporary
+        for curr_index in range(len(new_cumulative)):
+            if new_cumulative[curr_index] != "":
+                new = new_cumulative[curr_index]
+                f.write(new + "\n")
+
+    # Now switch to use the new cumulative file
+    old_cumulative = new_cumulative
+
+# TODO: automatically feed into git diff, now, or wrap in script that does that
 
