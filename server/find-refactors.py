@@ -6,14 +6,20 @@ import os.path
 import re
 
 # Make sure we pass the file name
-if len(sys.argv) < 2:
-    print("Usage: python3 find-refactors.py <filename>")
+if len(sys.argv) < 3:
+    print("Usage: python3 find-refactors.py <input-filename> <output-dir>")
     exit(1)
 
 # Get the file, failing if it does not exist
 fpath = sys.argv[1]
 if not os.path.exists(fpath):
     print("Error: " + fpath + " does not exist")
+    exit(1)
+
+# Get the output directory, failing if it does not exist
+outdir = sys.argv[2]
+if not os.path.exists(outdir):
+    print("Error: " + outdir + " does not exist")
     exit(1)
 
 # Group by cancellations
@@ -42,7 +48,9 @@ for i in range(group_starts[0]):
     old_cumulative.insert(0, "")
 
 # Dump initial version to file
-with open(fpath + "-" + str(0), 'w') as f: # TODO better filename, this is temporary
+(fname, fext) = os.path.splitext(os.path.basename(fpath))
+fdir = os.path.dirname(outdir)
+with open(outdir + "/" + fname + "-" + str(0) + fext, 'w') as f:
      for curr_index in range(len(old_cumulative)):
         if old_cumulative[curr_index] != "":
             old = old_cumulative[curr_index]
@@ -81,7 +89,7 @@ for i in range(len(group_ends) - 1):
             curr_index = curr_index + 1
 
     # Dump new version to file
-    with open(fpath + "-" + str(j), 'w') as f: # TODO better filename, this is temporary
+    with open(outdir + fname + "-" + str(j) + fext, 'w') as f:
         for curr_index in range(len(new_cumulative)):
             if new_cumulative[curr_index] != "":
                 new = new_cumulative[curr_index]
