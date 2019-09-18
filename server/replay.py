@@ -13,9 +13,6 @@ from typing import List, TypeVar, Callable
 
 logdir = "logs"
 
-import sys
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
 class More:
     def __init__(self, num_lines):
         self.num_lines = num_lines
