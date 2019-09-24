@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from sexpdata import Symbol, loads
-from typing import Any, Tuple
+from typing import Any, Tuple, TypeVar, Callable, List
 import re
 import functools
 
@@ -25,15 +25,19 @@ get_id = functools.partial(assoc, "id")
 def isObserve(entry):
     return get_cmd_type(entry) == Symbol("StmObserve")
 def isCancel(entry):
-    return get_cmd_type(entry) == Symbol("StmCancel")
+    return get_cmd_type(entry) == Symbol("StmCancel") or \
+        get_cmd_type(entry) == Symbol("Failed")
+def isFailed(entry):
+    return get_cmd_type(entry) == Symbol("Failed")
 def isAdd(entry):
     return get_cmd_type(entry) == Symbol("StmAdd")
 def getAddBody(entry):
     return get_body(entry)[1][2]
 
 def mkEntry(time : float, user : int, module : str, session : float, body : Any):
-    return [['time', time], ['user', user], ['session-module', module],
-            ['session', session], body]
+    return [[Symbol('time'), time], [Symbol('user'), user],
+            [Symbol('session-module'), module],
+            [Symbol('session'), session], body]
 
 def get_cmd_type(entry):
     body = get_body(entry)
@@ -51,6 +55,57 @@ def try_loads(sexp):
         return entry
     except:
         return None
+
+def preprocess_failures(profiles, commands : List[str]):
+    return sublist_replace(
+        sublist_replace(
+            commands,
+            [hoAnd(isCancel, functools.partial(userUsesIDE, profiles, "Proof General")),
+             lambda entry: (not isCancel(entry)) and (not isUnsetSilent(entry))],
+            lambda msgs: [mkEntry(get_time(msgs[0]),
+                                  get_user(msgs[0]),
+                                  get_session_module(msgs[0]),
+                                  get_session(msgs[0]),
+                                  [Symbol("Control"),
+                                   [Symbol("Failed"),
+                                    get_body(msgs[0])[1][1][0]]]),
+                          msgs[1]]),
+        [hoAnd(isCancel, functools.partial(userUsesIDE, profiles, "CoqIDE")),
+         isObserve, isObserve, isObserve],
+        lambda msgs: [mkEntry(get_time(msgs[0]),
+                              get_user(msgs[0]),
+                              get_session_module(msgs[0]),
+                              get_session(msgs[0]),
+                              [Symbol("Control"),
+                               [Symbol("Failed"),
+                                get_body(msgs[0])[1][1][0]]])])
+
+T = TypeVar('T')
+def sublist_replace(lst : List[T], sublst : List[Callable[[T], bool]],
+                    replace : Callable[[List[T]], List[T]]) -> List[T]:
+    for i in range(0, len(lst) - (len(sublst) - 1)):
+        if all([f(item) for f, item in zip(sublst, lst[i:i+len(sublst)])]):
+            return lst[:i] + replace(lst[i:i+len(sublst)]) + \
+                sublist_replace(lst[i+len(sublst):], sublst, replace)
+    return lst
+
+def sublist_contained(lst : List[T], sublst : List[Callable[[T], bool]]) -> bool:
+    for i in range(0, len(lst) - (len(sublst) - 1)):
+        if all([f(item) for f, item in zip(sublst, lst[i:i+len(sublst)])]):
+            return True
+
+def isUnsetSilent(entry):
+    return get_cmd_type(entry) == Symbol("StmAdd") and \
+        get_body(entry) == [Symbol("Control"), [Symbol("StmAdd"), [], "Unset Silent. "]]
+ides = ["coqtop", "coqc", "CoqIDE", "Proof General", "other"]
+def userUsesIDE(profiles, ide : str, entry) -> bool:
+    return ides[assoc("answers", profiles[get_user(entry)])[4]] == ide
+
+def hoAnd(*fs):
+    if len(fs) == 1:
+        return fs[0]
+    else:
+        return lambda *args: fs[0](*args) and hoAnd(*fs[1:])(*args)
 
 import sys
 def eprint(*args, **kwargs):
@@ -102,3 +157,25 @@ def kill_comments(string: str) -> str:
             if string[i] == '"' and string[i-1] != '\\':
                in_quote = True
     return result
+
+def isVernacCmd(cmd : str) -> bool:
+    if isGoalPunctuation(cmd):
+        return False
+    keyword = re.match("(#\[.*?\])?\s*(\S+)(\s+.*)?\.", cmd, re.DOTALL).group(2)
+    return isVernacKeyword(keyword)
+
+def isGoalPunctuation(cmd : str) -> bool:
+    return bool(re.match("(\d+:)?\s*[-*+\{\}]", cmd.strip()))
+
+def isVernacKeyword(cmd : str) -> bool:
+    if cmd in ["Show", "Timeout", "Unset",
+               "Qed", "Require", "Set", "From",
+               "Definition", "Fixpoint", "Theorem",
+               "Function", "Check", "Lemma", "Search",
+               "Hint", "Proof", "Backtrack", "Add",
+               "Inductive", "Open", "Coercion", "Instance",
+               "Ltac", "Notation", "Generalizable", "Anomaly",
+               "Redirect", "Import", "Defined", "Admitted",
+               "Remove", "Fact"]:
+        return True
+    return False

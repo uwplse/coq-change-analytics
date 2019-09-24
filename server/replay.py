@@ -10,8 +10,7 @@ from os.path import isfile, join, exists
 
 from common import *
 from typing import List, TypeVar, Callable
-
-from split_sessions import split_sessions
+from data_format import get_sessions
 
 logdir = "logs"
 
@@ -41,15 +40,6 @@ def inDateRange(args, entry):
     return (not args.before or session_time < args.before) and \
         (not args.after or session_time > args.after)
 
-def get_sessions(user):
-    user_sessions_dir = f"{logdir}/{user}-sessions"
-    if not exists(user_sessions_dir) or \
-       stat(user_sessions_dir).st_ctime < \
-       stat(join(logdir, str(user))).st_mtime:
-        eprint(f"Refreshing sessions for user {user} from logfile")
-        split_sessions(str(user))
-    return [f for f in listdir(user_sessions_dir)]
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--user", type=int, default=-2)
@@ -61,7 +51,7 @@ def main():
 
     #### User selection
     selected_user = args.user
-    users = sorted([f for f in listdir(logdir) if isfile(join(logdir, f))])
+    users = get_users(logdir)
     while selected_user == -2:
         eprint("Select user (-1 for all):")
         eprint(users)
@@ -118,41 +108,14 @@ def main():
     user, session_label = selected_session
     eprint(f"Selected session {session_label}")
 
-    with open(f"{logdir}/{user}-sessions/{session_label}", 'r') as session_file:
-        sorted_cmds = sorted(
-            [loads(line) for line in session_file.readlines()],
-            key=lambda cmd: get_time(cmd))
+    sorted_cmds = get_commmands(logdir, user, session_label)
 
     if args.mode == "raw":
         for cmd in sorted_cmds:
             print(dumps(cmd))
         return
 
-    processed_cmds = sublist_replace(
-        sorted_cmds,
-        [hoAnd(isCancel, functools.partial(userUsesIDE, profiles, "CoqIDE")),
-         isObserve, isObserve, isObserve],
-        lambda msgs: [mkEntry(get_time(msgs[0]),
-                              get_user(msgs[0]),
-                              get_session_module(msgs[0]),
-                              get_session(msgs[0]),
-                              [Symbol("Control"),
-                               [Symbol("Failed"),
-                                get_body(msgs[0])[1][1][0]]])])
-
-    # if sublist_contained(sorted_cmds, [isCancel, isUnsetSilent]):
-    processed_cmds = sublist_replace(
-        sorted_cmds,
-        [hoAnd(isCancel, functools.partial(userUsesIDE, profiles, "Proof General")),
-         lambda entry: (not isCancel(entry)) and (not isUnsetSilent(entry))],
-        lambda msgs: [mkEntry(get_time(msgs[0]),
-                              get_user(msgs[0]),
-                              get_session_module(msgs[0]),
-                              get_session(msgs[0]),
-                              [Symbol("Control"),
-                               [Symbol("Failed"),
-                                get_body(msgs[0])[1][1][0]]]),
-                      msgs[1]])
+    processed_cmds = preprocess_failures(profiles, sorted_cmds)
 
     for cmd in processed_cmds:
         if get_cmd_type(cmd) == Symbol("StmAdd"):
@@ -164,33 +127,6 @@ def main():
         else:
             assert get_cmd_type(cmd) == Symbol("StmObserve")
             # print("OBSERVE {}".format(get_body(cmd)[1][1]))
-
-def isUnsetSilent(entry):
-    return get_cmd_type(entry) == Symbol("StmAdd") and \
-        get_body(entry) == [Symbol("Control"), [Symbol("StmAdd"), [], "Unset Silent. "]]
-ides = ["coqtop", "coqc", "CoqIDE", "Proof General", "other"]
-def userUsesIDE(profiles, ide : str, entry) -> bool:
-    return ides[assoc("answers", profiles[get_user(entry)])[4]] == ide
-
-def hoAnd(*fs):
-    if len(fs) == 1:
-        return fs[0]
-    else:
-        return lambda *args: fs[0](*args) and hoAnd(*fs[1:])(*args)
-
-T = TypeVar('T')
-def sublist_replace(lst : List[T], sublst : List[Callable[[T], bool]],
-                    replace : Callable[[List[T]], List[T]]) -> List[T]:
-    for i in range(0, len(lst) - (len(sublst) - 1)):
-        if all([f(item) for f, item in zip(sublst, lst[i:i+len(sublst)])]):
-            return lst[:i] + replace(lst[i:i+len(sublst)]) + \
-                sublist_replace(lst[i+len(sublst):], sublst, replace)
-    return lst
-
-def sublist_contained(lst : List[T], sublst : List[Callable[[T], bool]]) -> bool:
-    for i in range(0, len(lst) - (len(sublst) - 1)):
-        if all([f(item) for f, item in zip(sublst, lst[i:i+len(sublst)])]):
-            return True
 
 if __name__ == "__main__":
     main()
