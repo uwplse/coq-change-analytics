@@ -10,7 +10,7 @@ from os.path import isfile, join, exists
 
 from common import *
 from typing import List, TypeVar, Callable
-from data_format import get_sessions
+from data_format import get_sessions, get_users, get_commands
 
 logdir = "logs"
 
@@ -45,6 +45,7 @@ def main():
     parser.add_argument("--user", type=int, default=-2)
     parser.add_argument("--paginate", dest="paginate", action='store_true')
     parser.add_argument("--mode", choices=["raw", "human"], default="human")
+    parser.add_argument("--only-interactive", dest="only_interactive", action='store_true')
     parser.add_argument("--before", type=parseDate)
     parser.add_argument("--after", type=parseDate)
     args = parser.parse_args()
@@ -72,11 +73,16 @@ def main():
     if selected_user == -1:
         sessions = []
         for user in users:
-            sessions += [(user, session) for session in get_sessions(user)]
+            sessions += [(user, session) for session in get_sessions(logdir, user)]
         sessions = sorted(sessions)
     else:
         sessions = sorted([(selected_user, session) for session in
-                           get_sessions(selected_user)])
+                           get_sessions(logdir, selected_user)])
+    if args.only_interactive:
+        sessions = [(user, session_label) for (user, session_label) in sessions if
+                    sublist_contained(preprocess_vernac_backtrack(
+                        get_commands(logdir, user, session_label)),
+                                      [isCancel, lambda entry: not isCancel(entry)])]
     more = More(num_lines=30)
     if selected_user == -1:
         lines = [f"{idx}: User {user}, Start time: {timestamp}"
@@ -108,7 +114,7 @@ def main():
     user, session_label = selected_session
     eprint(f"Selected session {session_label}")
 
-    sorted_cmds = get_commmands(logdir, user, session_label)
+    sorted_cmds = get_commands(logdir, user, session_label)
 
     if args.mode == "raw":
         for cmd in sorted_cmds:
@@ -117,16 +123,9 @@ def main():
 
     processed_cmds = preprocess_failures(profiles, sorted_cmds)
 
+    print(f"(* {dumps(get_session_module(processed_cmds[0]))} *)")
     for cmd in processed_cmds:
-        if get_cmd_type(cmd) == Symbol("StmAdd"):
-            print("(*{}:*) {}".format(get_id(cmd), get_body(cmd)[1][2]))
-        elif get_cmd_type(cmd) == Symbol("StmCancel"):
-            print("(*CANCEL {}*)".format(get_body(cmd)[1][1][0]))
-        elif get_cmd_type(cmd) == Symbol("Failed"):
-            print("(*FAILED {}*)".format(get_body(cmd)[1][1]))
-        else:
-            assert get_cmd_type(cmd) == Symbol("StmObserve")
-            # print("OBSERVE {}".format(get_body(cmd)[1][1]))
+        print(ppCommand(cmd))
 
 if __name__ == "__main__":
     main()
