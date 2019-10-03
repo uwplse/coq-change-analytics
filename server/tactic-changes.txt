@@ -1,0 +1,165 @@
+Added semicolon: hnf. -> hnf; simpl; auto.
+Added semicolon: compute. -> compute; auto.
+Added semicolon: compute. -> compute; auto.
+Other change: unfold NonError. -> compute; auto.
+Other change: unfold spec_exec in H1. -> apply impl_spec_exec.
+Other change: destruct ret; simpl in *; firstorder. -> destruct ret; firstoder.
+Change args: destruct (L.(value_eq_dec) (eval env t1) (eval env t2)) eqn:Q. -> destruct (L.(value_eq_dec) (L.(eval) env t1) (L.(eval) env t2)) eqn:E.
+Change args: destruct (L.(value_eq_dec) (eval env t1) (eval env t2)) eqn:E. -> destruct (L.(value_eq_dec) (L.(eval) env t1) (L.(eval) env t2)) eqn:E.
+Change args: apply L.(evalIntConst). -> apply L.(evalEqTrue).
+Other change: rewrite evalChoose. -> (assert
+  (forall res,
+   eval L env (Choose x (Eq (Int 6) (Times (Var x) (Int 2)))) = res ->
+   res = eval L env (Int 3))). 
+Other change: apply evalEqTrue. -> Admitted. 
+Other change: apply -> L.(evalEqTrue).  -> left. 
+Other change: rewrite subs_fresh_in_ty in Hm; try assumption. -> rewrite subst_fresh_in_ty in Hm; try assumption.
+Other change: rewrite subs_fresh_in_ty; assumption. -> rewrite subst_fresh_in_ty; assumption.
+Other change: simpl. -> unfold lt_size.
+Change args: apply sub_d__semantic_complete. -> apply sub_d__sem_sub_i.
+Change args: apply sub_d__semantic_complete_i. -> apply sub_d__sem_sub_i.
+Other change: induction w'; exists 0; induction t'; intros Hm'; try (solve [ destruct v; contradiction || tauto ]). -> Abort. 
+Other change: rewrite f_subst_union. -> admit. 
+Added semicolon: destruct k; intros w1; exists 1. -> destruct k; intros w1; exists 1; intros v Hm.
+Other change: exists t'.  -> simpl.
+Added semicolon: intros k. -> intros k; intros w1; exists w1; intros v Hm.
+Change args: intros X Y. -> intros X Y Hin.
+Change args: destruct (beq_idP X Y) as HXY. -> destruct (beq_idP X Y) as [HXY| HXY].
+Change args: destruct (beq_idP X Y) as HXY. -> destruct (beq_idP X Y) as [HXY| HXY].
+Lookup, then change args: apply IdSetFacts.singleton_q. -> Search -IdSet.singleton.  apply IdSetFacts.singleton_2.
+Lookup, then change args: apply IdSetFacts.singleton_1. -> Search -IdSet.singleton.  apply IdSetFacts.singleton_2.
+Lookup, then change args: apply IdSet.Facts.singleton_1. -> Search -IdSet.singleton.  apply IdSetFacts.singleton_2.
+Lookup, then change args: apply IdSetFacts.singleton_1. -> Search -IdSet.singleton.  apply IdSetFacts.singleton_2.
+Change args: intros k X t. -> intros k X t Hfresh.
+Other change: destruct (fresh_in_ty_pair__inv X t1 t2 Hfresh) as [Hfresh1 Hfresh2]. -> apply match_ty_exist__inv in Hm.
+Added semicolon: rewrite subs_fresh_in_ty in Hm. -> rewrite subs_fresh_in_ty in Hm; try assumption.
+Other change: rewrite subs_fresh_in_ty in Hm; try assumption. -> rewrite subs_fresh_in_ty; assumption.
+Added semicolon: rewrite subs_fresh_in_ty. -> rewrite subs_fresh_in_ty; assumption.
+Change args: intros X s Y t Hneq. -> intros X s Y t Hneq HY.
+Change args: unfold fresh_in_ty, freh in HY. -> unfold fresh_in_ty, fresh in HY.
+Change args: destruct (IdSetFacts.not_mem_iff Y (FV s)) as [_ Hmem]. -> destruct (IdSetFacts.not_mem_iff (FV s) Y) as [Hmem _].
+Change args: destruct (IdSetFacts.not_mem_iff (FV s) Y) as [_ Hmem]. -> destruct (IdSetFacts.not_mem_iff (FV s) Y) as [Hmem _].
+Change args: intros X t1 t2 H. -> intros X t1 t2 Hfresh.
+Added semicolon: split; intros k; specialize (Hsem k); pose proof (sem_sub_k_pair__inv _ _ _ _ _ Hsem). -> split; intros k; specialize (Hsem k); pose proof (sem_sub_k_pair__inv _ _ _ _ _ Hsem); tauto.
+Other change: simpl in Hm. -> destruct k; simpl in Hm; assumption.
+Change args: intros v Hv. -> intros v.
+Other change: (induction t; intros Hfresh s; try (solve [ reflexivity ]); unfold fresh_in_ty in *; simpl in Hfresh; simpl;
+  try (solve
+   [ apply fresh_union__inv in Hfresh; destruct Hfresh as [Hfresh1 Hfresh2]; rewrite IHt1; try assumption; rewrite IHt2; try assumption ])).  -> (induction t; intros Hfresh s; try (solve [ reflexivity ]); unfold fresh_in_ty in *; simpl in Hfresh; simpl;
+  try (solve
+   [ apply fresh_union__inv in Hfresh; destruct Hfresh as [Hfresh1 Hfresh2]; rewrite IHt1; try assumption; rewrite IHt2; try assumption;
+      reflexivity ])). 
+Change args: unfold not_b_free_in_ty in *. -> unfold not_b_free_in_ty, not_free in *.
+Change args: intros Hcontra admit. -> intros Hcontra.
+Other change: tauto.  -> auto. 
+Change args: intros k v Hv Hm. -> intros k v Hm.
+Other change: inversion Hv; subst. -> apply match_ty_pair; [ apply Hsub1 | apply Hsub2 ]; auto.
+Change args: intros k v Hv Hm. -> intros k v Hm.
+Change args: intros Hdt t2. -> intros Hdep t2.
+Other change: apply IdSetProps.Dec.MSetDecideAuxiliary.dec_In. -> intros X t.
+Other change: auto.  -> tauto. 
+Lookup, then change args: apply IdSetFacts.remove_3. -> Check IdSetFacts.remove_3.  apply IdSetFacts.remove_3 with Y.
+Other change: apply match_ty_value_type__reflexive; constructor. -> apply match_ty_cname.
+Removed semicolon: eexists; reflexivity. -> eexists. 
+Other change: intros t; induction t; try (solve [ auto using unite_pairs__preserves_nf with DBBetaJulia ]). -> intros t; induction t; try (solve [ simpl; auto using unite_pairs__preserves_nf with DBBetaJulia ]).
+Other change: auto with DBBetaJulia.  -> intros; split; auto.
+Other change: apply match_ty_exist. -> destruct w'.
+Change args: intros X Y t HX Hcontra. -> intros X Y t HX.
+Added semicolon: destruct w, v; simpl in Hm. -> destruct w, v; simpl in Hm; assumption.
+Other change: (intros w; induction w; intros v t; generalize dependent v; induction t; intros v Hm;
+  try (solve
+   [ apply match_ty_cname__inv in Hm; subst; constructor
+   | apply match_ty_pair__inv in Hm; destruct Hm as [v1 [v2 [Heq [Hm1 Hm2]]]]; subst; constructor; [ eapply IHt1 | eapply IHt2 ]; eauto
+   | apply match_ty_union__inv in Hm; destruct Hm as [Hm1| Hm2]; [ eapply IHt1 | eapply IHt2 ]; eauto
+   | apply match_ty_ref__weak_inv in Hm; destruct Hm as [t' Heq]; subst; constructor
+   | apply match_ty_fvar__inv in Hm; subst; constructor
+   | apply match_ty_ev__inv in Hm; subst; constructor
+   | apply match_ty_exist__0_inv in Hm; contradiction
+   | apply match_ty_exist__inv in Hm; destruct Hm as [tx Hmx]; eapply IHw; eassumption
+   | apply match_ty_bvar__inv in Hm; contradiction ])).  -> (intros w; induction w; intros v t; generalize dependent v; induction t; intros v Hm;
+  try (solve
+   [ apply match_ty_cname__inv in Hm; subst; constructor
+   | apply match_ty_pair__inv in Hm; destruct Hm as [v1 [v2 [Heq [Hm1 Hm2]]]]; subst; constructor; [ eapply IHt1 | eapply IHt2 ]; eauto
+   | apply match_ty_union__inv in Hm; destruct Hm as [Hm1| Hm2]; [ eapply IHt1 | eapply IHt2 ]; eauto
+   | apply match_ty_ref__weak_inv in Hm; destruct Hm as [t' Heq]; subst; constructor
+   | apply match_ty_fvar__inv in Hm; subst; constructor
+   | apply match_ty_ev__inv in Hm; subst; constructor
+   | apply match_ty_exist__0_inv in Hm; contradiction
+   | apply match_ty_exist__inv in Hm; destruct Hm as [tx [Hwf Hmx]]; eapply IHw; eassumption
+   | apply match_ty_bvar__inv in Hm; contradiction ])). 
+Other change: split; eapply sem_sub_k__trans; eauto. -> split; eapply sem_sub__trans; eauto.
+Other change: constructor.  -> + 
+Change args: destruct (max_inv_depth_le__inv _ _ _ Hk). -> destruct (max_inv_depth_le__inv _ _ _ Hdep) as [Hdep1 Hdep2].
+Change args: destruct (max_inv_depth_le__inv _ _ _ Hdep). -> destruct (max_inv_depth_le__inv _ _ _ Hdep) as [Hdep1 Hdep2].
+Change args: destruct IHt1 as [v1 [Hv1 Hm1]]. -> destruct (IHt1 k Hdep1) as [v1 [Hv1 Hm1]].
+Added semicolon: apply match_ty_value_type__reflexive. -> apply match_ty_value_type__reflexive; constructor || assumption.
+Change args: rewrite subs_id. -> rewrite subst_id.
+Other change: simpl. -> rewrite subst_equation.
+Other change: simpl. -> rewrite Hid.
+Other change: destruct (max_inv_depth_le__components_le _ _ _ Hk); auto using match_ty_pair. -> destruct (max_inv_depth_le__inv _ _ _ Hk); auto using match_ty_pair.
+Removed semicolon: assert (Hledep : Nat.max (inv_depth t1) (inv_depth t2) <= 0). -> assert (Hledep : Nat.max (| t1 |) (| t2 |) <= 0).
+Other change: (split; intros Hm; apply match_ty_ref__inv in Hm; destruct Hm as [t' [Heq [[Hdept Hdept'] Href]]]; subst; simpl in Hk, Hk'; apply le_S_n in Hk;
+  apply le_S_n in Hk'; assert (Ht'k : | t' | <= k) by (rewrite Hdept'; assumption); assert (Ht'k' : | t' | <= k') by (rewrite Hdept'; assumption);
+  simpl; split; try tauto; clear IHt IHk'; intros v Hv; specialize (IHk k'); pose proof IHk as IHk0; specialize (IHk t Hk Hk' v); specialize
+  (IHk0 t' Ht'k Ht'k' v); unfold sem_eq_k in Href; specialize (Href v Hv); tauto).  -> (split; intros Hm; apply match_ty_ref__inv in Hm; destruct Hm as [t' [Heq [[Hdept Hdept'] Href]]]; subst; simpl in Hk, Hk'; apply le_S_n in Hk;
+  apply le_S_n in Hk'; assert (Ht'k : | t' | <= k) by (rewrite Hdept'; assumption); assert (Ht'k' : | t' | <= k') by (rewrite Hdept'; assumption);
+  simpl; split; try tauto; clear IHt IHk'; intros v; specialize (IHk k'); pose proof IHk as IHk0; specialize (IHk t Hk Hk' v); specialize
+  (IHk0 t' Ht'k Ht'k' v); unfold sem_eq_k in Href; specialize (Href v); tauto). 
+Other change: intros v Hv; specialize (Href v Hv); split; intros Hm. -> intros v; specialize (Href v); split; intros Hm.
+Other change: apply sem_eq_k__sem_sub_k. -> intros k t.
+Change args: apply mk_nf__sem_eq_k. -> apply sem_eq_k__comm.
+Other change: (intros w; generalize dependent k; induction w; intros v t; generalize dependent v; induction t; intros v Hm;
+  try (solve
+   [ apply match_ty_cname__inv in Hm; subst; constructor
+   | apply match_ty_pair__inv in Hm; destruct Hm as [v1 [v2 [Heq [Hm1 Hm2]]]]; subst; constructor; [ eapply IHt1 | eapply IHt2 ]; eauto
+   | apply match_ty_union__inv in Hm; destruct Hm as [Hm1| Hm2]; [ eapply IHt1 | eapply IHt2 ]; eauto
+   | apply match_ty_ref__weak_inv in Hm; destruct Hm as [t' Heq]; subst; constructor
+   | apply match_ty_var__inv in Hm; subst; constructor
+   | apply match_ty_ev__inv in Hm; subst; constructor
+   | apply match_ty_exist__0_inv in Hm; contradiction
+   | apply match_ty_exist__inv in Hm; destruct Hm as [tx Hmx]; eapply IHw; eassumption ])).  -> (intros w; induction w; intros v t; generalize dependent v; induction t; intros v Hm;
+  try (solve
+   [ apply match_ty_cname__inv in Hm; subst; constructor
+   | apply match_ty_pair__inv in Hm; destruct Hm as [v1 [v2 [Heq [Hm1 Hm2]]]]; subst; constructor; [ eapply IHt1 | eapply IHt2 ]; eauto
+   | apply match_ty_union__inv in Hm; destruct Hm as [Hm1| Hm2]; [ eapply IHt1 | eapply IHt2 ]; eauto
+   | apply match_ty_ref__weak_inv in Hm; destruct Hm as [t' Heq]; subst; constructor
+   | apply match_ty_var__inv in Hm; subst; constructor
+   | apply match_ty_ev__inv in Hm; subst; constructor
+   | apply match_ty_exist__0_inv in Hm; contradiction
+   | apply match_ty_exist__inv in Hm; destruct Hm as [tx Hmx]; eapply IHw; eassumption ])). 
+Change args: exists (TCName c).  -> exists 0,(TCName c). 
+Added semicolon: apply sem_eq_k__comm. -> apply sem_eq_k__comm; auto.
+Removed semicolon: intros w1; exists w1; intros v Hm; simpl. -> intros w1.
+Other change: destruct w1; tauto. -> destruct w1; simpl; tauto.
+Added semicolon: apply sem_sub_k_ref. -> apply sem_sub_k_ref; auto.
+Removed semicolon: intros; reflexivity. -> intros.
+Change args: rewrite beq_id_refl. -> rewrite <- beq_id_refl.
+Other change: destruct k; split; assumption. -> destruct w; destruct k; split; assumption.
+Other change: destruct v; assumption. -> destruct k; destruct v; assumption.
+Other change: intros v; induction v; try (solve [ intros t1 t2 k Hm; destruct w; destruct k; contradiction ]). -> intros v; induction v; try (solve [ intros t1 t2 w k Hm; destruct w; destruct k; contradiction ]).
+Other change: intros v; induction v; try (solve [ intros t w k Hm; destruct k; contradiction ]). -> intros v; induction v; try (solve [ intros t w k Hm; destruct w; destruct k; contradiction ]).
+Change args: 3: {  -> Focus 3. 
+Change args: 3: {  -> Focus 3. 
+Other change: Focus 2.  -> } 
+Added semicolon: (match goal with
+ | |- ?A => let A' := restore_dims_rec tac A in
+            replace
+            A
+            with
+            A'
+ end).  -> (match goal with
+ | |- ?A => let A' := restore_dims_rec A in
+            replace
+            A
+            with
+            A'
+ end). 
+Change args: rewrite kron_1_r. -> rewrite kron_1_r'.
+Other change: Locate ":Fun".  -> Focus 3. 
+Other change: Locate ":Fun".  -> Focus 3. 
+Other change: unfold denote_u_db_box. -> intros.
+Number of changes which add a semicolon after: 13
+Number of changes which remove a semicolon clause after: 4
+Number of changes which change the arguments to a tactic: 31
+Number of changes which change the arguments to a tactic, after lookup: 5
+Number of other changes: 43
