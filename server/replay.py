@@ -42,12 +42,13 @@ def inDateRange(args, entry):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--user", type=int, default=-2)
-    parser.add_argument("--paginate", dest="paginate", action='store_true')
+    parser.add_argument("--user", '-u', type=int, default=-2)
+    parser.add_argument("--paginate", action='store_true')
     parser.add_argument("--mode", choices=["raw", "human"], default="human")
-    parser.add_argument("--only-interactive", dest="only_interactive", action='store_true')
-    parser.add_argument("--before", type=parseDate)
-    parser.add_argument("--after", type=parseDate)
+    parser.add_argument("--only-interactive", action='store_true')
+    parser.add_argument("--before", '-b', type=parseDate)
+    parser.add_argument("--after", '-a', type=parseDate)
+    parser.add_argument("--times", '-t', action='store_true')
     args = parser.parse_args()
 
     #### User selection
@@ -125,7 +126,11 @@ def main():
 
     print(f"(* {dumps(get_session_module(processed_cmds[0]))} *)")
     for cmd in processed_cmds:
-        print(ppCommand(cmd))
+        printed_cmd = ppCommand(cmd)
+        timestamp = ("(* " + str(datetime.fromtimestamp(get_time(cmd))) + " *)" )\
+            if args.times else ""
+        if printed_cmd:
+            print(printed_cmd + timestamp)
 
 if __name__ == "__main__":
     main()
