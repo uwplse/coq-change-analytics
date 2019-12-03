@@ -43,6 +43,7 @@ def main():
     num_changes_change_args = 0
     num_changes_lookup_args = 0
     num_changes_change_tactic = 0
+    user_proof_session_counts = collections.Counter()
     with open("users.txt", 'r') as usersfile:
         profiles = loads(usersfile.read())
     for user in get_users(logdir):
@@ -59,11 +60,12 @@ def main():
                 if lemma_cmd == None:
                     break
                 proof_cmds = pop_proof(preprocessed_cmds)
-                if is_backtracked_proof(proof_cmds):
-                    num_backtracked_proofs += 1
-                    continue
                 if not is_interactive_proof(proof_cmds):
                     num_other_noninteractive_proofs += 1
+                    continue
+                user_proof_session_counts[user] += 1
+                if is_backtracked_proof(proof_cmds):
+                    num_backtracked_proofs += 1
                     continue
                 # if not isFinishingProofCmd(getAddBody(getLastNonObserve(proof_cmds))):
                 #     continue
@@ -85,17 +87,22 @@ def main():
                                     if solution_period_match else solution
                                 if re.match(f"{escape_as_re(attempt_minus_period)}\s*;.*", solution):
                                     num_changes_add_semi += 1
+                                    print(f"Added semicolon: {attempt.command} -> {solution}")
                                 elif re.match(f"{escape_as_re(solution_minus_period)}\s*;.*",
                                               attempt.command):
                                     num_changes_remove_semi += 1
+                                    print(f"Removed semicolon: {attempt.command} -> {solution}")
                                 elif re.match(f"{get_stem(attempt.command)}[^;]*\.",
                                             solution):
                                     num_changes_change_args += 1
+                                    print(f"Change args: {attempt.command} -> {solution}")
                                 elif re.match(f"\s*(Search|Check).*", solution) and \
                                      re.match(f"{get_stem(attempt.command)}[^;]*\.",
                                               node.children[-1].children[-1].command):
                                     num_changes_lookup_args += 1
+                                    print(f"Lookup, then change args: {attempt.command} -> {solution} {node.children[-1].children[-1].command}")
                                 else:
+                                    print(f"Other change: {attempt.command} -> {solution}")
                                     num_changes_change_tactic += 1
                             # print(lemma_name_from_statement(getAddBody(lemma_cmd)),
                             #       [node.command for node in node.children])
@@ -111,10 +118,11 @@ def main():
     print(f"Number of other changes: {num_changes_change_tactic}")
     print(f"{num_backtracked_proofs} backtracked proofs")
     print(f"{num_other_noninteractive_proofs} other non-interactive proofs")
+    print(f"User interactive proof sessions count: {user_proof_session_counts}")
     print_proof_metadata(total_stats)
 
 def print_proof_metadata(metadata):
-    print(f"Total interactive proofs: {metadata.total_num_proofs}")
+    print(f"Total interactive, successful proof sessions: {metadata.total_num_proofs}")
     print(f"Total tactics invoked: {metadata.total_num_tactics}")
     print("Tactics invoked:")
     for tactic, count in metadata.all_tactics.most_common(25):
@@ -177,9 +185,7 @@ def get_stats(proof_cmds):
                          num_tactics, num_cancellations, num_failures,
                          all_tactics, cancelled_tactics, failed_tactics)
 def is_interactive_proof(proof_cmds):
-    return sublist_contained(proof_cmds,
-                             [isCancel,
-                              lambda entry: not isCancel(entry)])
+    return sublist_contained(proof_cmds, [isCancel])
 def is_backtracked_proof(proof_cmds):
     if isCancel(proof_cmds[-1]):
         return True
@@ -276,7 +282,7 @@ def build_graph(lemma_cmd, proof_cmds):
             next_node_id += 1
             if isFinishingProofCmd(getAddBody(cmd)):
                 for statenum, node in states:
-                    graph.setNodeColor(node, "green")
+                    graph.setNodeColor(node, "blue")
         if isFailed(cmd):
             most_recent_state, most_recent_node = states[-1]
             graph.setNodeColor(most_recent_node, "red")
@@ -288,7 +294,7 @@ def build_graph(lemma_cmd, proof_cmds):
             assert len(states) > 0
     if not os.path.exists("graphs"):
        os.mkdir("graphs")
-    graph_filename = "graphs/" + lemma_name + ".png"
+    graph_filename = "graphs/" + lemma_name + ".svg"
     graph.draw(graph_filename)
     return graph
 
