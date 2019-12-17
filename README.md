@@ -1,9 +1,15 @@
 REPLICA is a Coq plugin that collects data on the changes proof engineers make
 as they make them. The goal of this project is to classify and analyze this data,
-then use it to inform several research projects, including a proof patching tool
+then use it to inform several proof engineering tools, including a proof patching tool
 and a machine learning tool.
 
-***NOTE***: The REPLICA study has ended, and we will publish the paper soon and link to it here.
+***UPDATE, December 2019***: We have published the paper about this study in CPP 2020.
+The paper is [here](http://tlringer.github.io/pdf/analytics.pdf), and the data is 
+[here](https://github.com/uwplse/analytics-data).
+Thanks for your participation! If you see any mistakes in how your data was classified,
+feel free to reach out to us and we can post an errata.
+
+***UPDATE, September 2019***: The REPLICA study has ended.
 If you install REPLICA, it will not send data to the server because the server is no longer receiving data.
 Instead, it will log locally.
 Feel free to tweak the locally logged data so that it is easier to process, or feel free to
