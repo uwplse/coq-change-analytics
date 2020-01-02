@@ -61,7 +61,7 @@ Require Import Analytical.Analytics.
 to the beginning of your [coqrc](https://coq.inria.fr/refman/practical-tools/coq-commands.html#by-resource-file) resource file 
 (creating one if it does not exist).
 
-By default, `coq_makefile` disables the flag that loads your coqrc resource file during compilation passes.
+By default, `coq_makefile` sets a compilation flag that disables loading your coqrc resource file during compilation passes.
 Thus, inside of the projects you develop during your time using the plugin, if you use `coq_makefile`,
 please overwrite `COQFLAGS` in your `[MakefileName].conf` file so that it does not include the `-q` option.
 
